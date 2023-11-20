@@ -13,6 +13,7 @@ import com.github.britooo.looca.api.group.temperatura.Temperatura;
 import com.github.britooo.looca.api.util.Conversor;
 import com.slack.api.methods.SlackApiException;
 import modelo.*;
+import org.json.JSONObject;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import java.io.IOException;
@@ -22,6 +23,8 @@ import java.util.concurrent.*;
 
 import java.util.List;
 import java.util.Scanner;
+
+import static Dao.Slack.sendMessage;
 
 public class DaoDados {
     private Looca looca = new Looca();
@@ -35,7 +38,7 @@ public class DaoDados {
     private Integer fkDataCenter;
     private Integer idComponente;
 
-    Integer emitirAlerta = 10;
+    Integer emitirAlerta = 1;
 
     public DaoDados(Looca looca, Sistema sistema, Processador processador, Temperatura temp, Memoria memoria, String ipServidor, Integer fkEmpresa, Integer fkDataCenter, Integer idComponente) {
         this.looca = looca;
@@ -193,7 +196,7 @@ public class DaoDados {
             }
         }
     }
-    public void inserirLeitura () {
+    public void inserirLeitura () throws IOException, InterruptedException {
         Conexao conexao = new Conexao();
         JdbcTemplate con = conexao.getConexaoDoBanco();
         Integer opcao = 1;
@@ -291,18 +294,18 @@ public class DaoDados {
                     System.out.println("Enviando Leitura da Rede");
                 }
 
-                if (emitirAlerta == 0) {
-                    try {
-                        alerta();
-                    } catch (SlackApiException e) {
-                        throw new RuntimeException(e);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                    emitirAlerta = 10;
-                } else {
-                    emitirAlerta--;
-                }
+            try {
+                alertaCpu();
+                alertaRam();
+                alertaDisco();
+                alertaRede();
+            } catch (SlackApiException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         };
         executor.scheduleAtFixedRate(task, 0, 10, TimeUnit.SECONDS);
     }
@@ -349,11 +352,298 @@ public class DaoDados {
                 new BeanPropertyRowMapper<>(Rede.class));
     }
 
-    public void alerta() throws SlackApiException, IOException {
-        Alerta alerts = new Alerta();
+    public void alertaCpu() throws SlackApiException, IOException, InterruptedException {
+        Conexao conexao = new Conexao();
+        JdbcTemplate con = conexao.getConexaoDoBanco();
+        JSONObject json = new JSONObject();
+        JSONObject json2 = new JSONObject();
 
-        alerts.executaAlerta(ipServidor, fkEmpresa, fkDataCenter, idComponente);
+        //CPU
+        Double mediaUsoCpu = con.queryForObject("SELECT ROUND(AVG(emUso), 2) AS media_ultimas_10_leituras\n" +
+                "FROM (\n" +
+                "    SELECT emUso\n" +
+                "    FROM leitura AS l\n" +
+                "    JOIN componente AS c ON c.idComponente = l.fkComponente \n" +
+                "    WHERE c.tipo = 'CPU' AND l.fkServidor = ?\n" +
+                "    ORDER BY l.idLeitura DESC\n" +
+                "    LIMIT 10\n" +
+                ") AS ultimas_leituras;", Double.class, ipServidor);
+
+        Double temperatura = con.queryForObject("SELECT ROUND(AVG(temperatura), 2) AS media_ultimas_10_leituras\n" +
+                "FROM (\n" +
+                "    SELECT temperatura\n" +
+                "    FROM leitura AS l\n" +
+                "    JOIN componente AS c ON c.idComponente = l.fkComponente \n" +
+                "    WHERE c.tipo = 'CPU' AND l.fkServidor = ?\n" +
+                "    ORDER BY l.idLeitura DESC\n" +
+                "    LIMIT 10\n" +
+                ") AS ultimas_leituras;", Double.class, ipServidor);
+
+
+        Integer fkCpu = con.queryForObject("select idComponente from componente where tipo = 'CPU' and fkServidor = ?", Integer.class, ipServidor);
+
+        String componente = "CPU";
+        String tipo;
+        String descricao;
+        String descricao2;
+        Integer dias = 10;
+
+        Integer fkLeitura = con.queryForObject("SELECT idLeitura \n" +
+                "FROM leitura as l\n" +
+                "\tJOIN componente as c ON c.idComponente = l.fkComponente \n" +
+                "\t\tWHERE c.tipo = 'CPU' and l.fkServidor = ?\n" +
+                "\t\t\tORDER BY l.idLeitura DESC\n" +
+                "\t\t\t\tLIMIT 1;", Integer.class, ipServidor);
+
+        if (mediaUsoCpu >= 85) {
+
+
+            descricao = String.format("Alerta de Risco. Servidor %s: A utilização da %s esteve constantemente acima de 85%% nas ultimas %d verificação! média de utilização: %.2f%%", ipServidor, componente, dias, mediaUsoCpu);
+
+            tipo = "Risco";
+
+            con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresa, fkDataCenter, ipServidor, fkCpu, fkLeitura);
+
+
+        } else if (mediaUsoCpu > 66) {
+            descricao = String.format("Alerta de Cuidado. Servidor %s: A utilização da %s esteve constantemente acima de 66%% nas ultimas %d verificação! média de utilização: %.2f%%", ipServidor, componente, dias, mediaUsoCpu);
+
+            tipo = "Cuidado";
+
+            con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresa, fkDataCenter, ipServidor, fkCpu, fkLeitura);
+
+        } else {
+
+            descricao = String.format("Alerta Estável. Servidor %s: A utilização da %s está estável ultimas %d verificação! média de utilização: %.2f%%",ipServidor, componente, dias, mediaUsoCpu);
+
+            tipo = "Estável";
+
+            con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresa, fkDataCenter, ipServidor, fkCpu, fkLeitura);
+        }
+        json.put("text", descricao);
+
+        Slack.sendMessage(json);
+
+        if (temperatura > 39) {
+            descricao2 = String.format("Alerta de Risco. Servidor %s: A Temperatura da %s esteve constantemente acima de 39°C nas ultimas %d verificação! média de temperatura: %.2f°C", ipServidor, componente, dias, temperatura);
+
+            tipo = "Risco";
+
+            con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)",  tipo, descricao, fkEmpresa, fkDataCenter, ipServidor, fkCpu, fkLeitura);
+
+
+        } else if (temperatura > 35) {
+            descricao2 = String.format("Alerta de Cuidado. Servidor %s: A Temperatura da %s esteve constantemente acima de 35°C nas ultimas %d verificação! média de temperatura: %.2f°C", ipServidor, componente, dias, temperatura);
+
+            tipo = "Risco";
+
+            con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)",  tipo, descricao, fkEmpresa, fkDataCenter, ipServidor, fkCpu, fkLeitura);
+
+        } else {
+
+            descricao2 = String.format("Alerta Estável. Servidor %s: A Temperatura da %s está estável ultimas %d verificação! média de temperatura: %.2f°C",ipServidor, componente, dias, temperatura);
+
+            tipo = "Estável";
+
+            con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)",  tipo, descricao, fkEmpresa, fkDataCenter, ipServidor, fkCpu, fkLeitura);
+
+        }
+
+        json2.put("text", descricao2);
+
+        Slack.sendMessage(json2);
+
     }
+
+    public void alertaRam() throws SlackApiException, IOException, InterruptedException {
+        Conexao conexao = new Conexao();
+        JdbcTemplate con = conexao.getConexaoDoBanco();
+        JSONObject json = new JSONObject();
+
+        //RAM
+        Double mediaUsoRam = con.queryForObject("SELECT ROUND(AVG(emUso), 2) AS media_ultimas_10_leituras\n" +
+                "FROM (\n" +
+                "    SELECT emUso\n" +
+                "    FROM leitura AS l\n" +
+                "    JOIN componente AS c ON c.idComponente = l.fkComponente \n" +
+                "    WHERE c.tipo = 'Ram' AND l.fkServidor = ?\n" +
+                "    ORDER BY l.idLeitura DESC\n" +
+                "    LIMIT 10\n" +
+                ") AS ultimas_leituras;", Double.class, ipServidor);
+
+
+        Integer fkCpu = con.queryForObject("select idComponente from componente where tipo = 'Ram' and fkServidor = ?", Integer.class, ipServidor);
+
+        Integer fkLeitura = con.queryForObject("SELECT idLeitura \n" +
+                "FROM leitura as l\n" +
+                "\tJOIN componente as c ON c.idComponente = l.fkComponente \n" +
+                "\t\tWHERE c.tipo = 'Ram' and l.fkServidor = ?\n" +
+                "\t\t\tORDER BY l.idLeitura DESC\n" +
+                "\t\t\t\tLIMIT 1;", Integer.class, ipServidor);
+
+        String componente = "Ram";
+        String tipo;
+        String descricao;
+        Integer dias = 10;
+
+
+        if (mediaUsoRam > 99) {
+            descricao = String.format("Alerta de Risco. Servidor %s: A utilização da %s esteve constantemente acima de 85%% nas ultimas %d verificação! média de utilização: %.2f%%", ipServidor, componente, dias, mediaUsoRam);
+
+            tipo = "Risco";
+
+            con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresa, fkDataCenter, ipServidor, fkCpu, fkLeitura);
+
+
+        } else if (mediaUsoRam > 66) {
+            descricao = String.format("Alerta de Cuidado. Servidor %s: A utilização da %s esteve constantemente acima de 66%% nas ultimas %d verificação! média de utilização: %.2f%%", ipServidor, componente, dias, mediaUsoRam);
+
+            tipo = "Cuidado";
+
+            con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresa, fkDataCenter, ipServidor, fkCpu, fkLeitura);
+
+        } else {
+
+            descricao = String.format("Alerta Estável. Servidor %s: A utilização da %s está estável ultimas %d verificação! média de utilização: %.2f%%",ipServidor, componente, dias, mediaUsoRam);
+
+            tipo = "Estável";
+
+            con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresa, fkDataCenter, ipServidor, fkCpu, fkLeitura);
+        }
+        json.put("text", descricao);
+
+        Slack.sendMessage(json);
+
+    }
+
+    public void alertaDisco() throws SlackApiException, IOException, InterruptedException {
+        Conexao conexao = new Conexao();
+        JdbcTemplate con = conexao.getConexaoDoBanco();
+        JSONObject json = new JSONObject();
+
+        //Disco
+        Double mediaUsoDisk = con.queryForObject("SELECT ROUND(AVG(emUso), 2) AS media_ultimas_10_leituras\n" +
+                "FROM (\n" +
+                "    SELECT emUso\n" +
+                "    FROM leitura AS l\n" +
+                "    JOIN componente AS c ON c.idComponente = l.fkComponente \n" +
+                "    WHERE c.tipo = 'Disco' AND l.fkServidor = ?\n" +
+                "    ORDER BY l.idLeitura DESC\n" +
+                "    LIMIT 10\n" +
+                ") AS ultimas_leituras;", Double.class, ipServidor);
+
+
+        Integer fkDisco = con.queryForObject("select idComponente from componente where tipo = 'Disco' and fkServidor = ?", Integer.class, ipServidor);
+
+        Integer fkLeitura = con.queryForObject("SELECT idLeitura \n" +
+                "FROM leitura as l\n" +
+                "\tJOIN componente as c ON c.idComponente = l.fkComponente \n" +
+                "\t\tWHERE c.tipo = 'Disco' and l.fkServidor = ?\n" +
+                "\t\t\tORDER BY l.idLeitura DESC\n" +
+                "\t\t\t\tLIMIT 1;", Integer.class, ipServidor);
+
+        String componente = "Disco";
+        String tipo;
+        String descricao;
+        Integer dias = 10;
+
+
+        if (mediaUsoDisk >= 85) {
+            descricao = String.format("Alerta de Risco. Servidor %s: A utilização do %s esteve constantemente acima de 85%% nas ultimas %d verificação! média de utilização: %.2f%%",ipServidor, componente, dias, mediaUsoDisk);
+
+            tipo = "Risco";
+
+            con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresa, fkDataCenter, ipServidor, fkDisco, fkLeitura);
+
+
+        } else if (mediaUsoDisk > 66) {
+            descricao = String.format("Alerta de Cuidado. Servidor %s: A utilização do %s esteve constantemente acima de 66%% nas ultimas %d verificação! média de utilização: %.2f%%", ipServidor, componente, dias, mediaUsoDisk);
+
+            tipo = "Cuidado";
+
+            con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresa, fkDataCenter, ipServidor, fkDisco, fkLeitura);
+
+        } else {
+
+            descricao = String.format("Alerta Estável. Servidor %s: A utilização do %s está estável ultimas %d verificação! média de utilização: %.2f%%", ipServidor, componente, dias, mediaUsoDisk);
+
+            tipo = "Estável";
+
+            con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresa, fkDataCenter, ipServidor, fkDisco, fkLeitura);
+
+        }
+        json.put("text", descricao);
+
+        Slack.sendMessage(json);
+
+    }
+
+    public void alertaRede() throws SlackApiException, IOException, InterruptedException {
+        Conexao conexao = new Conexao();
+        JdbcTemplate con = conexao.getConexaoDoBanco();
+        JSONObject json = new JSONObject();
+        JSONObject json2 = new JSONObject();
+
+        //rede
+        Double mediaUsoRedeUp = con.queryForObject("SELECT ROUND(AVG(upload), 2) AS media_ultimas_10_leituras\n" +
+                "FROM (\n" +
+                "    SELECT upload\n" +
+                "    FROM leitura AS l\n" +
+                "    JOIN componente AS c ON c.idComponente = l.fkComponente \n" +
+                "    WHERE c.tipo = 'Rede' AND l.fkServidor = ?\n" +
+                "    ORDER BY l.idLeitura DESC\n" +
+                "    LIMIT 10\n" +
+                ") AS ultimas_leituras;", Double.class, ipServidor);
+
+        Double mediaUsoRedeDow = con.queryForObject("SELECT ROUND(AVG(download), 2) AS media_ultimas_10_leituras\n" +
+                "FROM (\n" +
+                "    SELECT download\n" +
+                "    FROM leitura AS l\n" +
+                "    JOIN componente AS c ON c.idComponente = l.fkComponente \n" +
+                "    WHERE c.tipo = 'Rede' AND l.fkServidor = ?\n" +
+                "    ORDER BY l.idLeitura DESC\n" +
+                "    LIMIT 10\n" +
+                ") AS ultimas_leituras;", Double.class, ipServidor);
+
+
+
+        Integer fkDisco = con.queryForObject("select idComponente from componente where tipo = 'Rede' and fkServidor = ?", Integer.class, ipServidor);
+
+        Integer fkLeitura = con.queryForObject("SELECT idLeitura \n" +
+                "FROM leitura as l\n" +
+                "\tJOIN componente as c ON c.idComponente = l.fkComponente \n" +
+                "\t\tWHERE c.tipo = 'Rede' and l.fkServidor = ?\n" +
+                "\t\t\tORDER BY l.idLeitura DESC\n" +
+                "\t\t\t\tLIMIT 1;", Integer.class, ipServidor);
+
+        String componente = "Rede";
+        String tipo;
+        String descricao;
+        String descricao2;
+        Integer dias = 10;
+
+
+        descricao = String.format("Alerta da rede. Servidor %s: A Upload da %s: ultimas %d verificação! média de utilização: %.2f",ipServidor, componente, dias, mediaUsoRedeUp);
+
+        tipo = "Cuidado";
+
+        con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresa, fkDataCenter, ipServidor, fkDisco, fkLeitura);
+
+        descricao2 = String.format("Alerta da rede. Servidor %s: O Download da %s: ultimas %d verificação! média de utilização: %.2f",ipServidor, componente, dias, mediaUsoRedeDow);
+
+        tipo = "Cuidado";
+
+        con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresa, fkDataCenter, ipServidor, fkDisco, fkLeitura);
+
+
+        json.put("text", descricao);
+        json2.put("text", descricao2);
+
+        Slack.sendMessage(json);
+        Slack.sendMessage(json2);
+
+    }
+
 
     public Looca getLooca() {
         return looca;

@@ -9,7 +9,7 @@ import java.util.Scanner;
 
 public class ApiLooca {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException, InterruptedException {
 
         DaoDados dao = new DaoDados();
         Scanner leitor = new Scanner(System.in);
