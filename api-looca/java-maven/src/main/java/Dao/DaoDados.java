@@ -17,9 +17,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.io.IOException;
 import java.nio.file.FileStore;
 import java.nio.file.FileSystems;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import java.util.List;
 import java.util.Scanner;
@@ -73,7 +71,7 @@ public class DaoDados {
         Conexao conexao = new Conexao();
         JdbcTemplate con = conexao.getConexaoDoBanco();
 
-        Integer count = con.queryForObject("SELECT COUNT(*) FROM Componente where fkServidor = ?", Integer.class, ipServidor);
+        Integer count = con.queryForObject("SELECT COUNT(*) FROM Componente where tipo != 'GPU' and fkServidor = ?", Integer.class, ipServidor);
 
         if (count != 0) {
             System.out.println("""
@@ -195,108 +193,104 @@ public class DaoDados {
     public void inserirLeitura () {
         Conexao conexao = new Conexao();
         JdbcTemplate con = conexao.getConexaoDoBanco();
+        Integer opcao = 1;
 
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
-        // Agendando a execução a cada 15 segundos
-        scheduler.scheduleAtFixedRate(() -> {
-            try {
-                while (true) {
-                    Integer opcao = 1;
-                    switch (opcao) {
-                        case 1: {
-                            idComponente = con.queryForObject("SELECT idComponente FROM Componente where tipo = 'CPU' and fkServidor = ?", Integer.class, ipServidor);
+        Runnable task = () -> {
 
-                            Double emUso = processador.getUso();
-                            String tempoAtivdade = Conversor.formatarSegundosDecorridos(sistema.getTempoDeAtividade());
-                            Double temperatura = temp.getTemperatura();
-                            Double frequencia = (double) processador.getFrequencia() / 1000000000.0;
+                switch (opcao) {
+                    case 1: {
+                        idComponente = con.queryForObject("SELECT idComponente FROM Componente where tipo = 'CPU' and fkServidor = ?", Integer.class, ipServidor);
 
-                            con.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, temperatura, frequencia, fkMedidaTemp, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (now(),ROUND(?, 2),?,?,?,5,?,?,?,?)", emUso, tempoAtivdade, temperatura, frequencia, fkEmpresa, fkDataCenter, ipServidor, idComponente);
+                        Double emUso = processador.getUso();
+                        String tempoAtivdade = Conversor.formatarSegundosDecorridos(sistema.getTempoDeAtividade());
+                        Double temperatura = temp.getTemperatura();
+                        Double frequencia = (double) processador.getFrequencia() / 1000000000.0;
 
-                            System.out.println("Enviando Leitura da CPU");
-                        }
-                        case 2: {
-                            idComponente = con.queryForObject("SELECT idComponente FROM Componente where tipo = 'RAM' and fkServidor = ?", Integer.class, ipServidor);
+                        con.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, temperatura, frequencia, fkMedidaTemp, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (now(),ROUND(?, 2),?,?,?,5,?,?,?,?)", emUso, tempoAtivdade, temperatura, frequencia, fkEmpresa, fkDataCenter, ipServidor, idComponente);
 
-                            Double emUso = memoria.getEmUso() / 1073741824.0;
-                            String tempoAtivdade = Conversor.formatarSegundosDecorridos(sistema.getTempoDeAtividade());
-                            Double temperatura = null;
-                            Double frequencia = null;
+                        System.out.println("Enviando Leitura da CPU");
+                    }
+                    case 2: {
+                        idComponente = con.queryForObject("SELECT idComponente FROM Componente where tipo = 'RAM' and fkServidor = ?", Integer.class, ipServidor);
 
-                            con.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, temperatura, frequencia, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (now(),ROUND(?, 2),?,?,?,?,?,?,?)", emUso, tempoAtivdade, temperatura, frequencia, fkEmpresa, fkDataCenter, ipServidor, idComponente);
-                            System.out.println("Enviando Leitura da RAM");
-                        }
-                        case 3: {
+                        Double emUso = memoria.getEmUso() / 1073741824.0;
+                        String tempoAtivdade = Conversor.formatarSegundosDecorridos(sistema.getTempoDeAtividade());
+                        Double temperatura = null;
+                        Double frequencia = null;
 
-                            //Criação do gerenciador
-                            DiscoGrupo grupoDeDiscos = looca.getGrupoDeDiscos();
+                        con.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, temperatura, frequencia, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (now(),ROUND(?, 2),?,?,?,?,?,?,?)", emUso, tempoAtivdade, temperatura, frequencia, fkEmpresa, fkDataCenter, ipServidor, idComponente);
+                        System.out.println("Enviando Leitura da RAM");
+                    }
+                    case 3: {
 
-                            //Obtendo lista de discos a partir do getter
-                            List<Disco> discos = grupoDeDiscos.getDiscos();
+                        //Criação do gerenciador
+                        DiscoGrupo grupoDeDiscos = looca.getGrupoDeDiscos();
 
-                            idComponente = con.queryForObject("SELECT idComponente FROM Componente where tipo = 'Disco' and fkServidor = ?", Integer.class, ipServidor);
+                        //Obtendo lista de discos a partir do getter
+                        List<Disco> discos = grupoDeDiscos.getDiscos();
+
+                        idComponente = con.queryForObject("SELECT idComponente FROM Componente where tipo = 'Disco' and fkServidor = ?", Integer.class, ipServidor);
 
 
-                            for (Disco arm : discos){
-                                for (FileStore store : FileSystems.getDefault().getFileStores()) {
-                                    try {
-                                        long total = store.getTotalSpace() / 1024 / 1024 / 1024;
-                                        long usado = (store.getTotalSpace() - store.getUnallocatedSpace()) / 1024 / 1024 / 1024;
+                        for (Disco arm : discos){
+                            for (FileStore store : FileSystems.getDefault().getFileStores()) {
+                                try {
+                                    long total = store.getTotalSpace() / 1024 / 1024 / 1024;
+                                    long usado = (store.getTotalSpace() - store.getUnallocatedSpace()) / 1024 / 1024 / 1024;
 
-                                        double porcUso = (double) usado / total * 100;
+                                    double porcUso = (double) usado / total * 100;
 
-                                        Double emUso = porcUso;
-                                        String tempoAtivdade = Conversor.formatarSegundosDecorridos(sistema.getTempoDeAtividade());
-                                        //bytes em mb
-                                        Double velocidadeLeitura = arm.getBytesDeLeitura() / 1048576.0;
-                                        Double velocidadeEscrita = arm.getBytesDeEscritas() / 1048576.0;
+                                    Double emUso = porcUso;
+                                    String tempoAtivdade = Conversor.formatarSegundosDecorridos(sistema.getTempoDeAtividade());
+                                    //bytes em mb
+                                    Double velocidadeLeitura = arm.getBytesDeLeitura() / 1048576.0;
+                                    Double velocidadeEscrita = arm.getBytesDeEscritas() / 1048576.0;
 
-                                        con.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, velocidadeLeitura, velocidadeEscrita, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (now(),ROUND(?, 2),?,ROUND(?, 2),ROUND(?, 2),?,?,?,?)", emUso, tempoAtivdade, velocidadeLeitura, velocidadeEscrita, fkEmpresa, fkDataCenter, ipServidor, idComponente);
+                                    con.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, velocidadeLeitura, velocidadeEscrita, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (now(),ROUND(?, 2),?,ROUND(?, 2),ROUND(?, 2),?,?,?,?)", emUso, tempoAtivdade, velocidadeLeitura, velocidadeEscrita, fkEmpresa, fkDataCenter, ipServidor, idComponente);
 
-                                    } catch (IOException e) {
-                                        System.err.println(e);
-                                    }
-                                    break;
+                                } catch (IOException e) {
+                                    System.err.println(e);
                                 }
                                 break;
                             }
-                            System.out.println("Enviando Leitura do Disco");
+                            break;
                         }
-                        case 4: {
-                            //Criação do gerenciador
-                            RedeInterfaceGroup grupoDeRedes = looca.getRede().getGrupoDeInterfaces();
-
-                            //Obtendo lista de discos a partir do getter
-                            List<RedeInterface> GpRede = grupoDeRedes.getInterfaces();
-
-
-                            idComponente = con.queryForObject("SELECT idComponente FROM Componente where tipo = 'Rede' and fkServidor = ?", Integer.class, ipServidor);
-
-
-                            for (RedeInterface rede : GpRede){
-                                Double emUso = null;
-                                String tempoAtivdade = Conversor.formatarSegundosDecorridos(sistema.getTempoDeAtividade());
-                                //bytes em mb
-                                Double upload = rede.getBytesEnviados() / 1048576.0;
-                                Double download = rede.getBytesRecebidos() / 1048576.0;
-
-
-                                con.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, upload, download, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (now(),ROUND(?, 2),?,ROUND(?, 2),ROUND(?, 2),?,?,?,?)", emUso, tempoAtivdade, upload, download, fkEmpresa, fkDataCenter, ipServidor, idComponente);
-                                break;
-                            }
-                        }
-                        System.out.println("Enviando Leitura da Rede");
+                        System.out.println("Enviando Leitura do Disco");
                     }
+                    case 4: {
+                        //Criação do gerenciador
+                        RedeInterfaceGroup grupoDeRedes = looca.getRede().getGrupoDeInterfaces();
+
+                        //Obtendo lista de discos a partir do getter
+                        List<RedeInterface> GpRede = grupoDeRedes.getInterfaces();
+
+
+                        idComponente = con.queryForObject("SELECT idComponente FROM Componente where tipo = 'Rede' and fkServidor = ?", Integer.class, ipServidor);
+
+
+                        for (RedeInterface rede : GpRede){
+                            Double emUso = null;
+                            String tempoAtivdade = Conversor.formatarSegundosDecorridos(sistema.getTempoDeAtividade());
+                            //bytes em mb
+                            Double upload = rede.getBytesEnviados() / 1048576.0;
+                            Double download = rede.getBytesRecebidos() / 1048576.0;
+
+
+                            con.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, upload, download, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (now(),ROUND(?, 2),?,ROUND(?, 2),ROUND(?, 2),?,?,?,?)", emUso, tempoAtivdade, upload, download, fkEmpresa, fkDataCenter, ipServidor, idComponente);
+                            break;
+                        }
+                    }
+                    System.out.println("Enviando Leitura da Rede");
                 }
+        };
 
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }, 0, 15, TimeUnit.SECONDS);
-
-
+        executor.scheduleAtFixedRate(task, 0, 15, TimeUnit.SECONDS);
     }
+
+
+
     public List <Componentes> exibirComponentes() {
         Conexao conexao = new Conexao();
         JdbcTemplate con = conexao.getConexaoDoBanco();

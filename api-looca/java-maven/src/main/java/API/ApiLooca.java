@@ -3,7 +3,6 @@ package API;
 import Dao.DaoDados;
 import com.github.britooo.looca.api.group.discos.Disco;
 import modelo.*;
-
 import java.util.Scanner;
 
 public class ApiLooca {
@@ -14,22 +13,33 @@ public class ApiLooca {
 
         Integer opcao;
         String ipServidor;
+        Integer numTentativas = 6;
 
 
         System.out.println("""
                 +-------------------------------+
-                |   Bem vindo ao performee.     |
-                +-------------------------------+""");
+                |   Bem vindo ao performee.     |""");
 
 
         while (true) {
-        System.out.println("Digite o Ip do Servidor: ");
+
+        System.out.print("""
+                +-------------------------------+
+                Digite o Ip do Servidor: """);
         ipServidor = leitor.nextLine();
 
         Boolean validacao = dao.buscarIp(ipServidor);
 
             if (validacao == false) {
-                System.out.println("Ip não Encontrado");
+                System.out.println("Servidor não Encontrado!");
+                numTentativas--;
+
+                if (numTentativas == 0) {
+                    System.out.println("Acabou suas tentativas! Volte mais tarde");
+                    System.exit(0);
+                }
+                System.out.println("""
+                        Você tem %d tentativas!""".formatted(numTentativas));
             }
             else {
                 while (true) {
