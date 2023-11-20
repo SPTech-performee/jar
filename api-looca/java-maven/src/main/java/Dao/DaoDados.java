@@ -11,6 +11,7 @@ import com.github.britooo.looca.api.group.rede.RedeInterfaceGroup;
 import com.github.britooo.looca.api.group.sistema.Sistema;
 import com.github.britooo.looca.api.group.temperatura.Temperatura;
 import com.github.britooo.looca.api.util.Conversor;
+import com.slack.api.methods.SlackApiException;
 import modelo.*;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -33,6 +34,8 @@ public class DaoDados {
     private Integer fkEmpresa;
     private Integer fkDataCenter;
     private Integer idComponente;
+
+    Integer emitirAlerta = 10;
 
     public DaoDados(Looca looca, Sistema sistema, Processador processador, Temperatura temp, Memoria memoria, String ipServidor, Integer fkEmpresa, Integer fkDataCenter, Integer idComponente) {
         this.looca = looca;
@@ -196,9 +199,7 @@ public class DaoDados {
         Integer opcao = 1;
 
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-
         Runnable task = () -> {
-
                 switch (opcao) {
                     case 1: {
                         idComponente = con.queryForObject("SELECT idComponente FROM Componente where tipo = 'CPU' and fkServidor = ?", Integer.class, ipServidor);
@@ -220,8 +221,13 @@ public class DaoDados {
                         Double temperatura = null;
                         Double frequencia = null;
 
-                        con.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, temperatura, frequencia, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (now(),ROUND(?, 2),?,?,?,?,?,?,?)", emUso, tempoAtivdade, temperatura, frequencia, fkEmpresa, fkDataCenter, ipServidor, idComponente);
+                        Integer tamanhoAtualRam = con.queryForObject("select capacidadeTotal from componente where tipo = 'Ram' and fkServidor = ?", Integer.class, ipServidor);
+
+                        double porcUso = (double) emUso / tamanhoAtualRam * 100;
+
+                        con.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, temperatura, frequencia, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (now(),ROUND(?, 2),?,?,?,?,?,?,?)", porcUso, tempoAtivdade, temperatura, frequencia, fkEmpresa, fkDataCenter, ipServidor, idComponente);
                         System.out.println("Enviando Leitura da RAM");
+
                     }
                     case 3: {
 
@@ -284,9 +290,21 @@ public class DaoDados {
                     }
                     System.out.println("Enviando Leitura da Rede");
                 }
-        };
 
-        executor.scheduleAtFixedRate(task, 0, 15, TimeUnit.SECONDS);
+                if (emitirAlerta == 0) {
+                    try {
+                        alerta();
+                    } catch (SlackApiException e) {
+                        throw new RuntimeException(e);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    emitirAlerta = 10;
+                } else {
+                    emitirAlerta--;
+                }
+        };
+        executor.scheduleAtFixedRate(task, 0, 10, TimeUnit.SECONDS);
     }
 
 
@@ -329,6 +347,12 @@ public class DaoDados {
 
         return con.query("select * from Leitura as l join Componente on idComponente = fkComponente where tipo = 'REDE' and l.fkServidor = " + ipServidor,
                 new BeanPropertyRowMapper<>(Rede.class));
+    }
+
+    public void alerta() throws SlackApiException, IOException {
+        Alerta alerts = new Alerta();
+
+        alerts.executaAlerta(ipServidor, fkEmpresa, fkDataCenter, idComponente);
     }
 
     public Looca getLooca() {

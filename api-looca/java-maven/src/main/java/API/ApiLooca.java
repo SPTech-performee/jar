@@ -3,9 +3,12 @@ package API;
 import Dao.DaoDados;
 import com.github.britooo.looca.api.group.discos.Disco;
 import modelo.*;
+
+import java.io.IOException;
 import java.util.Scanner;
 
 public class ApiLooca {
+
     public static void main(String[] args) {
 
         DaoDados dao = new DaoDados();
@@ -25,7 +28,7 @@ public class ApiLooca {
 
         System.out.print("""
                 +-------------------------------+
-                Digite o Ip do Servidor: """);
+                Digite o Ip do Servidor:""");
         ipServidor = leitor.nextLine();
 
         Boolean validacao = dao.buscarIp(ipServidor);
