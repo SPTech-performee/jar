@@ -16,6 +16,7 @@ import modelo.*;
 import org.json.JSONObject;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+
 import java.io.IOException;
 import java.nio.file.FileStore;
 import java.nio.file.FileSystems;
@@ -52,7 +53,7 @@ public class DaoDados {
         this.idComponente = idComponente;
     }
 
-    public DaoDados(){
+    public DaoDados() {
     }
 
     public Boolean buscarIp(String ipServer) {
@@ -64,11 +65,11 @@ public class DaoDados {
         if (verificacaoIp != 0) {
 
             ipServidor = ipServer;
-             fkEmpresa = con.queryForObject("SELECT fkEmpresa FROM Servidor where IpServidor = ?", Integer.class, ipServidor);
+            fkEmpresa = con.queryForObject("SELECT fkEmpresa FROM Servidor where IpServidor = ?", Integer.class, ipServidor);
             fkDataCenter = con.queryForObject("SELECT fkDataCenter FROM Servidor where IpServidor = ?", Integer.class, ipServidor);
 
             return true;
-        } else{
+        } else {
             return false;
         }
     }
@@ -141,6 +142,7 @@ public class DaoDados {
             System.out.println("Dados enviado com sucesso!");
         }
     }
+
     public void atualizarComponete(Integer opcao) {
         Conexao conexao = new Conexao();
         JdbcTemplate con = conexao.getConexaoDoBanco();
@@ -196,103 +198,102 @@ public class DaoDados {
             }
         }
     }
-    public void inserirLeitura () throws IOException, InterruptedException {
+
+    public void inserirLeitura() throws IOException, InterruptedException {
         Conexao conexao = new Conexao();
         JdbcTemplate con = conexao.getConexaoDoBanco();
         Integer opcao = 1;
 
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
         Runnable task = () -> {
-                switch (opcao) {
-                    case 1: {
-                        idComponente = con.queryForObject("SELECT idComponente FROM Componente where tipo = 'CPU' and fkServidor = ?", Integer.class, ipServidor);
+            switch (opcao) {
+                case 1: {
+                    idComponente = con.queryForObject("SELECT idComponente FROM Componente where tipo = 'CPU' and fkServidor = ?", Integer.class, ipServidor);
 
-                        Double emUso = processador.getUso();
-                        String tempoAtivdade = Conversor.formatarSegundosDecorridos(sistema.getTempoDeAtividade());
-                        Double temperatura = temp.getTemperatura();
-                        Double frequencia = (double) processador.getFrequencia() / 1000000000.0;
+                    Double emUso = processador.getUso();
+                    String tempoAtivdade = Conversor.formatarSegundosDecorridos(sistema.getTempoDeAtividade());
+                    Double temperatura = temp.getTemperatura();
+                    Double frequencia = (double) processador.getFrequencia() / 1000000000.0;
 
-                        con.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, temperatura, frequencia, fkMedidaTemp, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (now(),ROUND(?, 2),?,?,?,5,?,?,?,?)", emUso, tempoAtivdade, temperatura, frequencia, fkEmpresa, fkDataCenter, ipServidor, idComponente);
+                    con.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, temperatura, frequencia, fkMedidaTemp, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (now(),ROUND(?, 2),?,?,?,5,?,?,?,?)", emUso, tempoAtivdade, temperatura, frequencia, fkEmpresa, fkDataCenter, ipServidor, idComponente);
 
-                        System.out.println("Enviando Leitura da CPU");
-                    }
-                    case 2: {
-                        idComponente = con.queryForObject("SELECT idComponente FROM Componente where tipo = 'RAM' and fkServidor = ?", Integer.class, ipServidor);
+                    System.out.println("Enviando Leitura da CPU");
+                }
+                case 2: {
+                    idComponente = con.queryForObject("SELECT idComponente FROM Componente where tipo = 'RAM' and fkServidor = ?", Integer.class, ipServidor);
 
-                        Double emUso = memoria.getEmUso() / 1073741824.0;
-                        String tempoAtivdade = Conversor.formatarSegundosDecorridos(sistema.getTempoDeAtividade());
-                        Double temperatura = null;
-                        Double frequencia = null;
+                    Double emUso = memoria.getEmUso() / 1073741824.0;
+                    String tempoAtivdade = Conversor.formatarSegundosDecorridos(sistema.getTempoDeAtividade());
+                    Double temperatura = null;
+                    Double frequencia = null;
 
-                        Integer tamanhoAtualRam = con.queryForObject("select capacidadeTotal from componente where tipo = 'Ram' and fkServidor = ?", Integer.class, ipServidor);
+                    Integer tamanhoAtualRam = con.queryForObject("select capacidadeTotal from componente where tipo = 'Ram' and fkServidor = ?", Integer.class, ipServidor);
 
-                        double porcUso = (double) emUso / tamanhoAtualRam * 100;
+                    con.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, temperatura, frequencia, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (now(),ROUND(?, 2),?,?,?,?,?,?,?)", emUso, tempoAtivdade, temperatura, frequencia, fkEmpresa, fkDataCenter, ipServidor, idComponente);
+                    System.out.println("Enviando Leitura da RAM");
 
-                        con.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, temperatura, frequencia, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (now(),ROUND(?, 2),?,?,?,?,?,?,?)", porcUso, tempoAtivdade, temperatura, frequencia, fkEmpresa, fkDataCenter, ipServidor, idComponente);
-                        System.out.println("Enviando Leitura da RAM");
+                }
+                case 3: {
 
-                    }
-                    case 3: {
+                    //Criação do gerenciador
+                    DiscoGrupo grupoDeDiscos = looca.getGrupoDeDiscos();
 
-                        //Criação do gerenciador
-                        DiscoGrupo grupoDeDiscos = looca.getGrupoDeDiscos();
+                    //Obtendo lista de discos a partir do getter
+                    List<Disco> discos = grupoDeDiscos.getDiscos();
 
-                        //Obtendo lista de discos a partir do getter
-                        List<Disco> discos = grupoDeDiscos.getDiscos();
-
-                        idComponente = con.queryForObject("SELECT idComponente FROM Componente where tipo = 'Disco' and fkServidor = ?", Integer.class, ipServidor);
+                    idComponente = con.queryForObject("SELECT idComponente FROM Componente where tipo = 'Disco' and fkServidor = ?", Integer.class, ipServidor);
 
 
-                        for (Disco arm : discos){
-                            for (FileStore store : FileSystems.getDefault().getFileStores()) {
-                                try {
-                                    long total = store.getTotalSpace() / 1024 / 1024 / 1024;
-                                    long usado = (store.getTotalSpace() - store.getUnallocatedSpace()) / 1024 / 1024 / 1024;
+                    for (Disco arm : discos) {
+                        for (FileStore store : FileSystems.getDefault().getFileStores()) {
+                            try {
+                                long total = store.getTotalSpace() / 1024 / 1024 / 1024;
+                                long usado = (store.getTotalSpace() - store.getUnallocatedSpace()) / 1024 / 1024 / 1024;
 
-                                    double porcUso = (double) usado / total * 100;
+                                double porcUso = (double) usado / total * 100;
 
-                                    Double emUso = porcUso;
-                                    String tempoAtivdade = Conversor.formatarSegundosDecorridos(sistema.getTempoDeAtividade());
-                                    //bytes em mb
-                                    Double velocidadeLeitura = arm.getBytesDeLeitura() / 1048576.0;
-                                    Double velocidadeEscrita = arm.getBytesDeEscritas() / 1048576.0;
+                                Double emUso = porcUso;
+                                String tempoAtivdade = Conversor.formatarSegundosDecorridos(sistema.getTempoDeAtividade());
+                                //bytes em mb
+                                Double velocidadeLeitura = arm.getBytesDeLeitura() / 1048576.0;
+                                Double velocidadeEscrita = arm.getBytesDeEscritas() / 1048576.0;
 
-                                    con.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, velocidadeLeitura, velocidadeEscrita, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (now(),ROUND(?, 2),?,ROUND(?, 2),ROUND(?, 2),?,?,?,?)", emUso, tempoAtivdade, velocidadeLeitura, velocidadeEscrita, fkEmpresa, fkDataCenter, ipServidor, idComponente);
+                                con.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, velocidadeLeitura, velocidadeEscrita, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (now(),ROUND(?, 2),?,ROUND(?, 2),ROUND(?, 2),?,?,?,?)", emUso, tempoAtivdade, velocidadeLeitura, velocidadeEscrita, fkEmpresa, fkDataCenter, ipServidor, idComponente);
 
-                                } catch (IOException e) {
-                                    System.err.println(e);
-                                }
-                                break;
+                            } catch (IOException e) {
+                                System.err.println(e);
                             }
                             break;
                         }
-                        System.out.println("Enviando Leitura do Disco");
+                        break;
                     }
-                    case 4: {
-                        //Criação do gerenciador
-                        RedeInterfaceGroup grupoDeRedes = looca.getRede().getGrupoDeInterfaces();
-
-                        //Obtendo lista de discos a partir do getter
-                        List<RedeInterface> GpRede = grupoDeRedes.getInterfaces();
-
-
-                        idComponente = con.queryForObject("SELECT idComponente FROM Componente where tipo = 'Rede' and fkServidor = ?", Integer.class, ipServidor);
-
-
-                        for (RedeInterface rede : GpRede){
-                            Double emUso = null;
-                            String tempoAtivdade = Conversor.formatarSegundosDecorridos(sistema.getTempoDeAtividade());
-                            //bytes em mb
-                            Double upload = rede.getBytesEnviados() / 1048576.0;
-                            Double download = rede.getBytesRecebidos() / 1048576.0;
-
-
-                            con.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, upload, download, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (now(),ROUND(?, 2),?,ROUND(?, 2),ROUND(?, 2),?,?,?,?)", emUso, tempoAtivdade, upload, download, fkEmpresa, fkDataCenter, ipServidor, idComponente);
-                            break;
-                        }
-                    }
-                    System.out.println("Enviando Leitura da Rede");
+                    System.out.println("Enviando Leitura do Disco");
                 }
+                case 4: {
+                    //Criação do gerenciador
+                    RedeInterfaceGroup grupoDeRedes = looca.getRede().getGrupoDeInterfaces();
+
+                    //Obtendo lista de discos a partir do getter
+                    List<RedeInterface> GpRede = grupoDeRedes.getInterfaces();
+
+
+                    idComponente = con.queryForObject("SELECT idComponente FROM Componente where tipo = 'Rede' and fkServidor = ?", Integer.class, ipServidor);
+
+
+                    for (RedeInterface rede : GpRede) {
+                        Double emUso = null;
+                        String tempoAtivdade = Conversor.formatarSegundosDecorridos(sistema.getTempoDeAtividade());
+                        //bytes em mb
+                        Double upload = rede.getBytesEnviados() / 1e7;
+                        Double download = rede.getBytesRecebidos() / 1e7;
+
+
+                        con.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, upload, download, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (now(),ROUND(?, 2),?,ROUND(?, 2),ROUND(?, 2),?,?,?,?)", emUso, tempoAtivdade, upload, download, fkEmpresa, fkDataCenter, ipServidor, idComponente);
+                        break;
+                    }
+                }
+                System.out.println("Enviando Leitura da Rede");
+            }
 
             try {
                 alertaCpu();
@@ -311,8 +312,7 @@ public class DaoDados {
     }
 
 
-
-    public List <Componentes> exibirComponentes() {
+    public List<Componentes> exibirComponentes() {
         Conexao conexao = new Conexao();
         JdbcTemplate con = conexao.getConexaoDoBanco();
 
@@ -321,7 +321,7 @@ public class DaoDados {
 
     }
 
-    public List <Cpu> exibirCpu() {
+    public List<Cpu> exibirCpu() {
         Conexao conexao = new Conexao();
         JdbcTemplate con = conexao.getConexaoDoBanco();
 
@@ -329,7 +329,7 @@ public class DaoDados {
                 new BeanPropertyRowMapper<>(Cpu.class));
     }
 
-    public List <Ram> exibirRam() {
+    public List<Ram> exibirRam() {
         Conexao conexao = new Conexao();
         JdbcTemplate con = conexao.getConexaoDoBanco();
 
@@ -337,14 +337,15 @@ public class DaoDados {
                 new BeanPropertyRowMapper<>(Ram.class));
     }
 
-    public List <Disk> exibirDisco() {
+    public List<Disk> exibirDisco() {
         Conexao conexao = new Conexao();
         JdbcTemplate con = conexao.getConexaoDoBanco();
 
         return con.query("select * from Leitura as l join Componente on idComponente = fkComponente where tipo = 'DISCO' and l.fkServidor = " + ipServidor,
                 new BeanPropertyRowMapper<>(Disk.class));
     }
-    public List <Rede> exibirRede() {
+
+    public List<Rede> exibirRede() {
         Conexao conexao = new Conexao();
         JdbcTemplate con = conexao.getConexaoDoBanco();
 
@@ -414,7 +415,7 @@ public class DaoDados {
 
         } else {
 
-            descricao = String.format("Alerta Estável. Servidor %s: A utilização da %s está estável ultimas %d verificação! média de utilização: %.2f%%",ipServidor, componente, dias, mediaUsoCpu);
+            descricao = String.format("Alerta Estável. Servidor %s: A utilização da %s está estável ultimas %d verificação! média de utilização: %.2f%%", ipServidor, componente, dias, mediaUsoCpu);
 
             tipo = "Estável";
 
@@ -429,7 +430,7 @@ public class DaoDados {
 
             tipo = "Risco";
 
-            con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)",  tipo, descricao, fkEmpresa, fkDataCenter, ipServidor, fkCpu, fkLeitura);
+            con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresa, fkDataCenter, ipServidor, fkCpu, fkLeitura);
 
 
         } else if (temperatura > 35) {
@@ -437,15 +438,15 @@ public class DaoDados {
 
             tipo = "Risco";
 
-            con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)",  tipo, descricao, fkEmpresa, fkDataCenter, ipServidor, fkCpu, fkLeitura);
+            con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresa, fkDataCenter, ipServidor, fkCpu, fkLeitura);
 
         } else {
 
-            descricao2 = String.format("Alerta Estável. Servidor %s: A Temperatura da %s está estável ultimas %d verificação! média de temperatura: %.2f°C",ipServidor, componente, dias, temperatura);
+            descricao2 = String.format("Alerta Estável. Servidor %s: A Temperatura da %s está estável ultimas %d verificação! média de temperatura: %.2f°C", ipServidor, componente, dias, temperatura);
 
             tipo = "Estável";
 
-            con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)",  tipo, descricao, fkEmpresa, fkDataCenter, ipServidor, fkCpu, fkLeitura);
+            con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresa, fkDataCenter, ipServidor, fkCpu, fkLeitura);
 
         }
 
@@ -471,6 +472,8 @@ public class DaoDados {
                 "    LIMIT 10\n" +
                 ") AS ultimas_leituras;", Double.class, ipServidor);
 
+        Double capacidadeTotalRam = con.queryForObject("SELECT c.capacidadeTotal as capacidade FROM Componente as c\n" +
+                "    WHERE fkServidor = ? AND c.tipo = 'RAM';", Double.class, ipServidor);
 
         Integer fkCpu = con.queryForObject("select idComponente from componente where tipo = 'Ram' and fkServidor = ?", Integer.class, ipServidor);
 
@@ -487,7 +490,7 @@ public class DaoDados {
         Integer dias = 10;
 
 
-        if (mediaUsoRam > 99) {
+        if (mediaUsoRam > (capacidadeTotalRam * .85)) {
             descricao = String.format("Alerta de Risco. Servidor %s: A utilização da %s esteve constantemente acima de 85%% nas ultimas %d verificação! média de utilização: %.2f%%", ipServidor, componente, dias, mediaUsoRam);
 
             tipo = "Risco";
@@ -495,7 +498,7 @@ public class DaoDados {
             con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresa, fkDataCenter, ipServidor, fkCpu, fkLeitura);
 
 
-        } else if (mediaUsoRam > 66) {
+        } else if (mediaUsoRam <=(capacidadeTotalRam * .85) && mediaUsoRam >= (capacidadeTotalRam * .66)) {
             descricao = String.format("Alerta de Cuidado. Servidor %s: A utilização da %s esteve constantemente acima de 66%% nas ultimas %d verificação! média de utilização: %.2f%%", ipServidor, componente, dias, mediaUsoRam);
 
             tipo = "Cuidado";
@@ -504,7 +507,7 @@ public class DaoDados {
 
         } else {
 
-            descricao = String.format("Alerta Estável. Servidor %s: A utilização da %s está estável ultimas %d verificação! média de utilização: %.2f%%",ipServidor, componente, dias, mediaUsoRam);
+            descricao = String.format("Alerta Estável. Servidor %s: A utilização da %s está estável ultimas %d verificação! média de utilização: %.2f%%", ipServidor, componente, dias, mediaUsoRam);
 
             tipo = "Estável";
 
@@ -549,7 +552,7 @@ public class DaoDados {
 
 
         if (mediaUsoDisk >= 85) {
-            descricao = String.format("Alerta de Risco. Servidor %s: A utilização do %s esteve constantemente acima de 85%% nas ultimas %d verificação! média de utilização: %.2f%%",ipServidor, componente, dias, mediaUsoDisk);
+            descricao = String.format("Alerta de Risco. Servidor %s: A utilização do %s esteve constantemente acima de 85%% nas ultimas %d verificação! média de utilização: %.2f%%", ipServidor, componente, dias, mediaUsoDisk);
 
             tipo = "Risco";
 
@@ -606,7 +609,6 @@ public class DaoDados {
                 ") AS ultimas_leituras;", Double.class, ipServidor);
 
 
-
         Integer fkDisco = con.queryForObject("select idComponente from componente where tipo = 'Rede' and fkServidor = ?", Integer.class, ipServidor);
 
         Integer fkLeitura = con.queryForObject("SELECT idLeitura \n" +
@@ -623,13 +625,13 @@ public class DaoDados {
         Integer dias = 10;
 
 
-        descricao = String.format("Alerta da rede. Servidor %s: A Upload da %s: ultimas %d verificação! média de utilização: %.2f",ipServidor, componente, dias, mediaUsoRedeUp);
+        descricao = String.format("Alerta da rede. Servidor %s: A Upload da %s: ultimas %d verificação! média de utilização: %.2f", ipServidor, componente, dias, mediaUsoRedeUp);
 
         tipo = "Cuidado";
 
         con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresa, fkDataCenter, ipServidor, fkDisco, fkLeitura);
 
-        descricao2 = String.format("Alerta da rede. Servidor %s: O Download da %s: ultimas %d verificação! média de utilização: %.2f",ipServidor, componente, dias, mediaUsoRedeDow);
+        descricao2 = String.format("Alerta da rede. Servidor %s: O Download da %s: ultimas %d verificação! média de utilização: %.2f", ipServidor, componente, dias, mediaUsoRedeDow);
 
         tipo = "Cuidado";
 

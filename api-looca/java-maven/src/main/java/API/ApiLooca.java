@@ -26,12 +26,12 @@ public class ApiLooca {
 
         while (true) {
 
-        System.out.print("""
-                +-------------------------------+
-                Digite o Ip do Servidor:""");
-        ipServidor = leitor.nextLine();
+            System.out.print("""
+                    +-------------------------------+
+                    Digite o Ip do Servidor:""");
+            ipServidor = leitor.nextLine();
 
-        Boolean validacao = dao.buscarIp(ipServidor);
+            Boolean validacao = dao.buscarIp(ipServidor);
 
             if (validacao == false) {
                 System.out.println("Servidor não Encontrado!");
@@ -43,19 +43,18 @@ public class ApiLooca {
                 }
                 System.out.println("""
                         Você tem %d tentativas!""".formatted(numTentativas));
-            }
-            else {
+            } else {
                 while (true) {
 
                     System.out.println("""
-                    +-------------------------------+
-                    | 1) Cadastrar componentes      |
-                    | 2) Atualizar componentes      |
-                    | 3) Inserir dados de leitura   |
-                    | 4) Ver Componentes            |
-                    | 5) Ver Leituras               |
-                    | 6) Sair                       |
-                    +-------------------------------+""");
+                            +-------------------------------+
+                            | 1) Cadastrar componentes      |
+                            | 2) Atualizar componentes      |
+                            | 3) Inserir dados de leitura   |
+                            | 4) Ver Componentes            |
+                            | 5) Ver Leituras               |
+                            | 6) Sair                       |
+                            +-------------------------------+""");
 
                     opcao = leitor.nextInt();
 
@@ -69,14 +68,14 @@ public class ApiLooca {
                             Integer opcaoAtualizar;
                             do {
                                 System.out.println("""
-                            +--------------------------------------+
-                            | Qual componente deseja atualizar?    |
-                            +--------------------------------------+
-                            | 1) Atualizar CPU                     |
-                            | 2) Atualizar RAM                     |
-                            | 3) Atualizar Tudo                    |
-                            | 4) Cancelar                          |
-                            +--------------------------------------+""");
+                                        +--------------------------------------+
+                                        | Qual componente deseja atualizar?    |
+                                        +--------------------------------------+
+                                        | 1) Atualizar CPU                     |
+                                        | 2) Atualizar RAM                     |
+                                        | 3) Atualizar Tudo                    |
+                                        | 4) Cancelar                          |
+                                        +--------------------------------------+""");
                                 opcaoAtualizar = leitor.nextInt();
 
                                 dao.atualizarComponete(opcaoAtualizar);
@@ -89,9 +88,9 @@ public class ApiLooca {
                         }
                         case 4: {
                             System.out.println("""
-                            +----------------------------+
-                            | Componentes:               |
-                            +----------------------------+""");
+                                    +----------------------------+
+                                    | Componentes:               |
+                                    +----------------------------+""");
                             for (Componentes comp : dao.exibirComponentes()) {
                                 System.out.println(comp);
                             }
@@ -99,9 +98,9 @@ public class ApiLooca {
                         }
                         case 5: {
                             System.out.println("""
-                            +----------------------------+
-                            | Leituras:                  |
-                            +----------------------------+""");
+                                    +----------------------------+
+                                    | Leituras:                  |
+                                    +----------------------------+""");
                             for (Cpu cpu : dao.exibirCpu()) {
                                 System.out.println(cpu);
                             }
@@ -120,7 +119,7 @@ public class ApiLooca {
                         }
                         case 6: {
                             System.out.println("""
-                            Saindo...""");
+                                    Saindo...""");
                             System.exit(0);
                         }
                         default: {
@@ -132,4 +131,3 @@ public class ApiLooca {
         }
     }
 }
-
