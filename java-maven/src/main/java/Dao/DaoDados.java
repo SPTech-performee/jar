@@ -17,9 +17,12 @@ import org.json.JSONObject;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.FileStore;
 import java.nio.file.FileSystems;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.*;
 
 import java.util.List;
@@ -33,27 +36,62 @@ public class DaoDados {
     private Processador processador = looca.getProcessador();
     private Temperatura temp = new Temperatura();
     private Memoria memoria = looca.getMemoria();
-
+    private String hostNameUser = looca.getRede().getParametros().getNomeDeDominio();
+    private String ipUser = looca.getRede().getParametros().getServidoresDns().toString();
     private String ipServidor;
     private Integer fkEmpresa;
     private Integer fkDataCenter;
     private Integer idComponente;
-
     private Integer emitirAlerta = 10;
+    private Integer tentativasAcesso = 1;
 
-    public DaoDados(Looca looca, Sistema sistema, Processador processador, Temperatura temp, Memoria memoria, String ipServidor, Integer fkEmpresa, Integer fkDataCenter, Integer idComponente) {
+    public DaoDados(Looca looca, Sistema sistema, Processador processador, Temperatura temp, Memoria memoria,String hostNameUser, String ipUser, String ipServidor, Integer fkEmpresa, Integer fkDataCenter, Integer idComponente, Integer emitirAlerta, Integer tentativasAcesso) {
         this.looca = looca;
         this.sistema = sistema;
         this.processador = processador;
         this.temp = temp;
         this.memoria = memoria;
+        this.hostNameUser = hostNameUser;
+        this.ipUser = ipUser;
         this.ipServidor = ipServidor;
         this.fkEmpresa = fkEmpresa;
         this.fkDataCenter = fkDataCenter;
         this.idComponente = idComponente;
+        this.emitirAlerta = emitirAlerta;
+        this.tentativasAcesso = tentativasAcesso;
     }
 
     public DaoDados() {
+    }
+
+    public void setLog(String descricao) {
+
+        FileWriter arq = null;
+
+        try {
+            // Cria o FileWriter
+            arq = new FileWriter("E:\\Meus arquivos\\GitHub\\GitHub 2 sem\\performee-jar\\performee_log.txt", true);
+
+            LocalDateTime currentDate = LocalDateTime.now();
+            String formattedDateTime = currentDate.format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
+
+            // Escreve no arquivo
+            arq.write(formattedDateTime + descricao + "\n");
+
+            arq.flush();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                // Fecha o FileWriter no bloco finally
+                if (arq != null) {
+                    arq.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public Boolean buscarIp(String ipServer) {
@@ -68,8 +106,17 @@ public class DaoDados {
             fkEmpresa = con.queryForObject("SELECT fkEmpresa FROM Servidor where IpServidor = ?", Integer.class, ipServidor);
             fkDataCenter = con.queryForObject("SELECT fkDataCenter FROM Servidor where IpServidor = ?", Integer.class, ipServidor);
 
+            String descricao = """
+                    : Usuário do IP %s, hostName: %s. Acessou o Servidor de IP: %s com Sucesso!""".formatted(ipUser, hostNameUser, ipServidor);
+            setLog(descricao);
+
             return true;
         } else {
+
+            String descricao = """
+                    : Usuário do IP %s, hostName: %s. Tentou acessar um servidor inexistente pela %d vez!""".formatted(ipUser, hostNameUser, tentativasAcesso);
+            setLog(descricao);
+            tentativasAcesso++;
             return false;
         }
     }
@@ -83,6 +130,11 @@ public class DaoDados {
         if (count != 0) {
             System.out.println("""
                     Já existe %d componentes cadastrado!""".formatted(count));
+
+            String descricao = """
+                    : Usuário do IP %s, hostName: %s. Tentou cadastrar os componentes do servidor de IP: %s, mas já existe componentes cadastrados""".formatted(ipUser, hostNameUser, ipServidor);
+            setLog(descricao);
+
         } else {
             switch (1) {
                 case 1: {
@@ -140,6 +192,9 @@ public class DaoDados {
                 }
             }
             System.out.println("Dados enviado com sucesso!");
+            String descricao = """
+                    : Usuário do IP %s, hostName: %s. Todos componentes do servidor de IP: %s cadastrados com sucesso!""".formatted(ipUser, hostNameUser, ipServidor);
+            setLog(descricao);
         }
     }
 
@@ -152,6 +207,10 @@ public class DaoDados {
             System.out.println("""
                     Não existe componentes cadastrados nesse servidor!
                     Cadastrando agora...""");
+
+            String descricao = """
+                    : Usuário do IP %s, hostName: %s. Tentou atualizar componentes do servidor de IP: %s, mas não existe componentes cadastrado para atualizar!""".formatted(ipUser, hostNameUser, ipServidor);
+            setLog(descricao);
 
             inserirComponente();
         } else {
@@ -693,6 +752,21 @@ public class DaoDados {
 
     }
 
+    public String getHostNameUser() {
+        return hostNameUser;
+    }
+
+    public void setHostNameUser(String hostNameUser) {
+        this.hostNameUser = hostNameUser;
+    }
+
+    public String getIpUser() {
+        return ipUser;
+    }
+
+    public void setIpUser(String ipUser) {
+        this.ipUser = ipUser;
+    }
 
     public Looca getLooca() {
         return looca;
@@ -766,6 +840,22 @@ public class DaoDados {
         this.idComponente = idComponente;
     }
 
+    public Integer getEmitirAlerta() {
+        return emitirAlerta;
+    }
+
+    public void setEmitirAlerta(Integer emitirAlerta) {
+        this.emitirAlerta = emitirAlerta;
+    }
+
+    public Integer getTentativasAcesso() {
+        return tentativasAcesso;
+    }
+
+    public void setTentativasAcesso(Integer tentativasAcesso) {
+        this.tentativasAcesso = tentativasAcesso;
+    }
+
     @Override
     public String toString() {
         return "DaoDados{" +
@@ -774,10 +864,14 @@ public class DaoDados {
                 ", processador=" + processador +
                 ", temp=" + temp +
                 ", memoria=" + memoria +
+                ", hostNameUser='" + hostNameUser + '\'' +
+                ", ipUser='" + ipUser + '\'' +
                 ", ipServidor='" + ipServidor + '\'' +
                 ", fkEmpresa=" + fkEmpresa +
                 ", fkDataCenter=" + fkDataCenter +
                 ", idComponente=" + idComponente +
+                ", emitirAlerta=" + emitirAlerta +
+                ", tentativasAcesso=" + tentativasAcesso +
                 '}';
     }
 }

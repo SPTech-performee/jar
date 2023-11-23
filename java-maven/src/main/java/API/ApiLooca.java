@@ -39,6 +39,9 @@ public class ApiLooca {
 
                 if (numTentativas == 0) {
                     System.out.println("Acabou suas tentativas! Volte mais tarde");
+                    String descricao = """
+                    : Usuário do IP %s, hostName: %s. Esgotou o número máximo de tentativas para acessar o servidor! e o JAR foi encerrado""".formatted(dao.getIpUser(), dao.getHostNameUser(), ipServidor);
+                    dao.setLog(descricao);
                     System.exit(0);
                 }
                 System.out.println("""

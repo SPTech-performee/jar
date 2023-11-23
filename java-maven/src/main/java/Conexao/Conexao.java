@@ -18,7 +18,7 @@ public class Conexao {
 
             dataSource.setUrl("jdbc:mysql://localhost:3306/performee");
             dataSource.setUsername("root");
-            dataSource.setPassword("COLOQUE SUA SENHA AQUI!");
+            dataSource.setPassword("sptech");
 
             conexaoDoBanco = new JdbcTemplate(dataSource);
         }
