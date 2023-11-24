@@ -17,7 +17,7 @@ public class ApiLooca {
         DaoDados dao = new DaoDados();
         Scanner leitor = new Scanner(System.in);
 
-        Integer opcao = null;
+        Integer opcao = 0;
         String ipServidor;
         Integer numTentativas = 6;
 
@@ -127,6 +127,9 @@ public class ApiLooca {
                         case 6: {
                             System.out.println("""
                                     Saindo...""");
+                            String descricao = """
+                    : Usuário do IP %s, hostName: %s. Saiu do servidor de IP: %s""".formatted(dao.getIpUser(), dao.getHostNameUser(), ipServidor);
+                            dao.setLog(descricao);
                             System.exit(0);
                         }
                         default: {
