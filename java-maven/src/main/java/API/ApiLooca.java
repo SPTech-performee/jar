@@ -6,6 +6,9 @@ import modelo.*;
 
 import java.io.IOException;
 import java.util.Scanner;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class ApiLooca {
 
@@ -14,7 +17,7 @@ public class ApiLooca {
         DaoDados dao = new DaoDados();
         Scanner leitor = new Scanner(System.in);
 
-        Integer opcao;
+        Integer opcao = null;
         String ipServidor;
         Integer numTentativas = 6;
 
@@ -24,7 +27,7 @@ public class ApiLooca {
                 |   Bem vindo ao performee.     |""");
 
 
-        while (true) {
+        do {
 
             System.out.print("""
                     +-------------------------------+
@@ -47,7 +50,7 @@ public class ApiLooca {
                 System.out.println("""
                         Você tem %d tentativas!""".formatted(numTentativas));
             } else {
-                while (true) {
+                do {
 
                     System.out.println("""
                             +-------------------------------+
@@ -76,13 +79,14 @@ public class ApiLooca {
                                         +--------------------------------------+
                                         | 1) Atualizar CPU                     |
                                         | 2) Atualizar RAM                     |
-                                        | 3) Atualizar Tudo                    |
-                                        | 4) Cancelar                          |
+                                        | 3) Atualizar Disco                   |
+                                        | 4) Atualizar Rede                    |
+                                        | 5) Cancelar                          |
                                         +--------------------------------------+""");
                                 opcaoAtualizar = leitor.nextInt();
 
                                 dao.atualizarComponete(opcaoAtualizar);
-                            } while (opcaoAtualizar != 4);
+                            } while (opcaoAtualizar != 5);
                             break;
                         }
                         case 3: {
@@ -129,8 +133,8 @@ public class ApiLooca {
                             System.out.println("Opção inválida! digite novamente");
                         }
                     }
-                }
+                } while (opcao != 3);
             }
-        }
+        } while (opcao != 3);
     }
 }

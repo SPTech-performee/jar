@@ -1,23 +1,20 @@
-2023/11/23 13:23:47 Usuário realizou login
-2023/11/23 13:33:49 Usuário realizou login
-2023/11/23 13:34:26Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Tentou acessar um servidor inexistente!
-2023/11/23 13:34:54: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Tentou acessar um servidor inexistente!
-2023/11/23 13:37:57: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Acessou o Servidor de ip: 000000004 com Sucesso!
-2023/11/23 13:50:30: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Tentou acessar um servidor inexistente!
-2023/11/23 13:50:31: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Tentou acessar um servidor inexistente!
-2023/11/23 13:50:50: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Acessou o Servidor de IP: 000000004 com Sucesso!
-2023/11/23 13:50:51: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Tentou cadastrar os componentes do servidor de IP: 000000004, mas já já existe componentes cadastrados
-2023/11/23 14:01:52: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Tentou acessar um servidor inexistente!
-2023/11/23 14:01:53: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Tentou acessar um servidor inexistente!
-2023/11/23 14:01:54: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Tentou acessar um servidor inexistente!
-2023/11/23 14:01:55: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Tentou acessar um servidor inexistente!
-2023/11/23 14:01:56: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Tentou acessar um servidor inexistente!
-2023/11/23 14:01:57: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Tentou acessar um servidor inexistente!
-2023/11/23 14:01:57: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Esgotou o número máximo de tentativas para acessar o servidor! e o JAR foi encerrado
-2023/11/23 14:10:06: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Tentou acessar um servidor inexistente pela 1 vez!
-2023/11/23 14:10:06: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Tentou acessar um servidor inexistente pela 2 vez!
-2023/11/23 14:10:07: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Tentou acessar um servidor inexistente pela 3 vez!
-2023/11/23 14:10:08: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Tentou acessar um servidor inexistente pela 4 vez!
-2023/11/23 14:10:08: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Tentou acessar um servidor inexistente pela 5 vez!
-2023/11/23 14:10:09: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Tentou acessar um servidor inexistente pela 6 vez!
-2023/11/23 14:10:09: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Esgotou o número máximo de tentativas para acessar o servidor! e o JAR foi encerrado
+2023/11/23 21:04:34: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Tentou acessar um servidor inexistente pela 1 vez!
+2023/11/23 21:04:47: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Tentou acessar um servidor inexistente pela 2 vez!
+2023/11/23 21:17:15: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Acessou o Servidor de IP: 000000004 com Sucesso!
+2023/11/23 21:19:01: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Acessou o Servidor de IP: 000000004 com Sucesso!
+2023/11/23 21:43:59: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Acessou o Servidor de IP: 000000004 com Sucesso!
+2023/11/23 21:44:01: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Tentou acessar um servidor inexistente pela 1 vez!
+2023/11/23 21:44:09: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Teve Alerta de Cuidado. Servidor 000000004: A utilização da Ram está ocilando entre 66% a 85% da memória total, nas ultimas 10 verificação. Pode ocorrer lentidão! Média de utilização: 6,57GB
+2023/11/23 21:44:11: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Teve Alerta de Cuidado. Servidor 000000004: A utilização da Ram está ocilando entre 66% a 85% da memória total, nas ultimas 10 verificação. Pode ocorrer lentidão! Média de utilização: 6,57GB
+2023/11/23 21:45:09: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Acessou o Servidor de IP: 000000004 com Sucesso!
+2023/11/23 21:45:14: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Teve Alerta de Cuidado. Servidor 000000004: A utilização da Ram está ocilando entre 66% a 85% da memória total, nas ultimas 10 verificação. Pode ocorrer lentidão! Média de utilização: 6,56GB
+2023/11/23 21:45:47: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Acessou o Servidor de IP: 000000004 com Sucesso!
+2023/11/23 21:45:52: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Teve Alerta de Cuidado. Servidor 000000004: A utilização da Ram está ocilando entre 66% a 85% da memória total, nas ultimas 10 verificação. Pode ocorrer lentidão! Média de utilização: 6,55GB
+2023/11/23 21:45:59: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Teve Alerta de Cuidado. Servidor 000000004: A utilização da Ram está ocilando entre 66% a 85% da memória total, nas ultimas 10 verificação. Pode ocorrer lentidão! Média de utilização: 6,55GB
+2023/11/23 21:46:09: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Teve Alerta de Cuidado. Servidor 000000004: A utilização da Ram está ocilando entre 66% a 85% da memória total, nas ultimas 10 verificação. Pode ocorrer lentidão! Média de utilização: 6,55GB
+2023/11/23 21:46:19: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Teve Alerta de Cuidado. Servidor 000000004: A utilização da Ram está ocilando entre 66% a 85% da memória total, nas ultimas 10 verificação. Pode ocorrer lentidão! Média de utilização: 6,56GB
+2023/11/23 21:46:29: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Teve Alerta de Cuidado. Servidor 000000004: A utilização da Ram está ocilando entre 66% a 85% da memória total, nas ultimas 10 verificação. Pode ocorrer lentidão! Média de utilização: 6,56GB
+2023/11/23 21:46:39: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Teve Alerta de Cuidado. Servidor 000000004: A utilização da Ram está ocilando entre 66% a 85% da memória total, nas ultimas 10 verificação. Pode ocorrer lentidão! Média de utilização: 6,57GB
+2023/11/23 21:46:49: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Teve Alerta de Cuidado. Servidor 000000004: A utilização da Ram está ocilando entre 66% a 85% da memória total, nas ultimas 10 verificação. Pode ocorrer lentidão! Média de utilização: 6,58GB
+2023/11/23 21:47:00: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Acessou o Servidor de IP: 000000004 com Sucesso!
+2023/11/23 21:47:01: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Tentou cadastrar os componentes do servidor de IP: 000000004, mas já existe componentes cadastrados
