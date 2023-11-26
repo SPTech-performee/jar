@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ApiLooca {
 
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) {
 
         DaoDados dao = new DaoDados();
         Scanner leitor = new Scanner(System.in);

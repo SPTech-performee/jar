@@ -40,6 +40,13 @@
             <version>8.1.0</version>
         </dependency>
 
+        <!-- Driver do servidor de banco SQL SERVER -->
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+            <version>12.4.1.jre11</version>
+        </dependency>
+
         <dependency>
             <groupId>com.slack.api</groupId>
             <artifactId>slack-api-client</artifactId>

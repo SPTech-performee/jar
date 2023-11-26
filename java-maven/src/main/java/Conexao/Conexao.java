@@ -6,26 +6,35 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 public class Conexao {
     private JdbcTemplate conexaoDoBanco;
+    private JdbcTemplate conexaoDoBancoServer;
 
         public Conexao() {
             BasicDataSource dataSource = new BasicDataSource();
+            BasicDataSource dataSourceServer = new BasicDataSource();
 
-            // com.mysql.cj.jdbc.Driver <- EXEMPLO PARA MYSQL
-
+            //MYSQL
             dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
-
-            //  jdbc:mysql://localhost:3306/mydb <- EXEMPLO PARA MYSQL
-
             dataSource.setUrl("jdbc:mysql://localhost:3306/performee");
             dataSource.setUsername("root");
             dataSource.setPassword("sptech");
 
+            //SQL Server
+            dataSourceServer.setDriverClassName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            dataSourceServer.setUrl("jdbc:sqlserver://3.215.254.176:1433;databaseName=model;trustServerCertificate=true;");
+            dataSourceServer.setUsername("cruduser");
+            dataSourceServer.setPassword("UsuarioCrud@12345");
+
             conexaoDoBanco = new JdbcTemplate(dataSource);
-        }
+            conexaoDoBancoServer = new JdbcTemplate(dataSourceServer);
+
+}
         public  JdbcTemplate getConexaoDoBanco() {
             return conexaoDoBanco;
         }
 
-        // nessa etapa se cria a conexão com o banco
+        public JdbcTemplate getConexaoDoBancoServer() {
+        return conexaoDoBancoServer;
+    }
+
     }
 
