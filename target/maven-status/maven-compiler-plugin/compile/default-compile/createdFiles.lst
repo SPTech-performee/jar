@@ -1,0 +1,10 @@
+Modelo\Leituras.class
+Modelo\Ram.class
+Dao\DaoDados.class
+Modelo\Rede.class
+Conexao\Conexao.class
+Modelo\Disk.class
+AppPerformee.class
+Modelo\Componentes.class
+Dao\Slack.class
+Modelo\Cpu.class

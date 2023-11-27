@@ -6,8 +6,7 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="java-maven" />
-        <module name="api-looca" />
+        <module name="java-performee" />
       </profile>
     </annotationProcessing>
   </component>

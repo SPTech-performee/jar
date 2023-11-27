@@ -1,0 +1,21 @@
+2023/11/27 19:19:39: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Tentou acessar um servidor inexistente pela 1 vez!
+2023/11/27 19:19:48: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Tentou acessar um servidor inexistente pela 2 vez!
+2023/11/27 19:20:56: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Acessou o Servidor de IP: 34232125672323 com Sucesso!
+2023/11/27 19:21:02: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Tentou cadastrar os componentes do servidor de IP: 34232125672323, mas já existe componentes cadastrados
+2023/11/27 19:22:02: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Iniciou o processo de inserção no servidor de IP: 34232125672323 com sucesso!
+2023/11/27 19:28:50: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Acessou o Servidor de IP: 23235787664322 com Sucesso!
+2023/11/27 19:28:58: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Todos componentes do servidor de IP: 23235787664322 cadastrados com sucesso!
+2023/11/27 19:29:07: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Tentou cadastrar os componentes do servidor de IP: 23235787664322, mas já existe componentes cadastrados
+2023/11/27 19:29:10: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Tentou cadastrar os componentes do servidor de IP: 23235787664322, mas já existe componentes cadastrados
+2023/11/27 19:29:14: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Iniciou o processo de inserção no servidor de IP: 23235787664322 com sucesso!
+2023/11/27 19:29:33: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Teve Alerta de Risco. Servidor 23235787664322: A utilização da Ram está constantemente acima de 85% da memória total, nas ultimas 10 verificação. Risco de travamento! Média de utilização: 7,14GB
+2023/11/27 19:29:43: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Teve Alerta de Risco. Servidor 23235787664322: A utilização da Ram está constantemente acima de 85% da memória total, nas ultimas 10 verificação. Risco de travamento! Média de utilização: 7,15GB
+2023/11/27 19:29:53: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Acessou o Servidor de IP: 23235787664322 com Sucesso!
+2023/11/27 19:30:10: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Atualizou a CPU do servidor de IP: 23235787664322 com sucesso!
+2023/11/27 19:30:14: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Atualizou a RAM do servidor de IP: 23235787664322 com sucesso!
+2023/11/27 19:30:18: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Atualizou o Disco do servidor de IP: 23235787664322 com sucesso!
+2023/11/27 19:30:21: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Atualizou a Rede do servidor de IP: 23235787664322 com sucesso!
+2023/11/27 19:30:26: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Tentou cadastrar os componentes do servidor de IP: 23235787664322, mas já existe componentes cadastrados
+2023/11/27 19:30:29: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Iniciou o processo de inserção no servidor de IP: 23235787664322 com sucesso!
+2023/11/27 19:30:42: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Teve Alerta de Risco. Servidor 23235787664322: A utilização da Ram está constantemente acima de 85% da memória total, nas ultimas 10 verificação. Risco de travamento! Média de utilização: 7,15GB
+2023/11/27 19:30:53: Usuário do IP [192.168.15.1], hostName: DESKTOP-JED27UB. Teve Alerta de Risco. Servidor 23235787664322: A utilização da Ram está constantemente acima de 85% da memória total, nas ultimas 10 verificação. Risco de travamento! Média de utilização: 7,16GB
