@@ -17,12 +17,20 @@ import org.json.JSONObject;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.FileStore;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.EnumSet;
+import java.util.Set;
 import java.util.concurrent.*;
 
 import java.util.List;
@@ -67,33 +75,48 @@ public class DaoDados {
     public DaoDados() {
     }
 
+    private static final String file_path = System.getProperty("java.io.tmpdir") + "/performee_log.txt";
+
     public void setLog(String descricao) {
-
-        FileWriter arq = null;
-
         try {
-            // Cria o FileWriter
-            arq = new FileWriter("performee_log.txt", true);
+            // Verifica se o arquivo existe... se não existir, ele cria.
+            if (!Files.exists(Path.of(file_path))) {
+                setCaminhoArq(file_path);
+            }
 
-            LocalDateTime currentDate = LocalDateTime.now();
-            String formattedDateTime = currentDate.format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
+            try (FileWriter arq = new FileWriter(file_path, true)) {
+                LocalDateTime currentDate = LocalDateTime.now();
+                String formattedDateTime = currentDate.format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
 
-            // Escreve no arquivo
-            arq.write(formattedDateTime + descricao + "\n");
-
-            arq.flush();
-
+                // Escreve no arquivo
+                arq.write(formattedDateTime + " " + descricao + "\n" + "\n");
+            }
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                // Fecha o FileWriter no bloco finally
-                if (arq != null) {
-                    arq.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+        }
+    }
+
+    private static void setCaminhoArq(String caminho) {
+        System.out.println(caminho);
+        boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
+
+        try {
+            if (isWindows) {
+                // Se for Windows, cria o arquivo sem definir permissões
+                Files.createFile(Path.of(caminho));
+            } else {
+                // Se não for Windows, define permissões POSIX
+                Set<PosixFilePermission> perms = EnumSet.of(
+                        PosixFilePermission.OWNER_READ,
+                        PosixFilePermission.OWNER_EXECUTE,
+                        PosixFilePermission.OWNER_WRITE
+                );
+                Files.createFile(Path.of(caminho), PosixFilePermissions.asFileAttribute(perms));
             }
+
+            System.out.println("Arquivo gerado com sucesso em: " + caminho);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

@@ -15,7 +15,7 @@ public class Conexao {
         dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
         dataSource.setUrl("jdbc:mysql://localhost:3306/performee");
         dataSource.setUsername("root");
-        dataSource.setPassword("01231153");
+        dataSource.setPassword("sua_senha_sql_local");
 
         //SQL Server
         dataSourceServer.setDriverClassName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
