@@ -365,7 +365,7 @@ public class DaoDados {
                     conServer.update("update Componente set modelo = ?, capacidadeTotal = ? where idComponente = ?", modelo, capacidadeTotal, idComponenteServer);
 
                     String descricao = """
-                    : Usuário do IP %s, hostName: %s. Atualizou a CPU do servidor de IP: %s com sucesso!""".formatted(ipUser, hostNameUser, ipServidor);
+                            : Usuário do IP %s, hostName: %s. Atualizou a CPU do servidor de IP: %s com sucesso!""".formatted(ipUser, hostNameUser, ipServidor);
                     setLog(descricao);
                     break;
                 }
@@ -381,7 +381,7 @@ public class DaoDados {
                     conServer.update("update Componente set modelo = ?, capacidadeTotal = ROUND(?, 2) where idComponente = ?", modelo, capacidadeTotal, idComponenteServer);
 
                     String descricao = """
-                    : Usuário do IP %s, hostName: %s. Atualizou a RAM do servidor de IP: %s com sucesso!""".formatted(ipUser, hostNameUser, ipServidor);
+                            : Usuário do IP %s, hostName: %s. Atualizou a RAM do servidor de IP: %s com sucesso!""".formatted(ipUser, hostNameUser, ipServidor);
                     setLog(descricao);
                     break;
                 }
@@ -405,7 +405,7 @@ public class DaoDados {
                         break;
                     }
                     String descricao = """
-                    : Usuário do IP %s, hostName: %s. Atualizou o Disco do servidor de IP: %s com sucesso!""".formatted(ipUser, hostNameUser, ipServidor);
+                            : Usuário do IP %s, hostName: %s. Atualizou o Disco do servidor de IP: %s com sucesso!""".formatted(ipUser, hostNameUser, ipServidor);
                     setLog(descricao);
                     break;
                 }
@@ -428,7 +428,7 @@ public class DaoDados {
                         break;
                     }
                     String descricao = """
-                    : Usuário do IP %s, hostName: %s. Atualizou a Rede do servidor de IP: %s com sucesso!""".formatted(ipUser, hostNameUser, ipServidor);
+                            : Usuário do IP %s, hostName: %s. Atualizou a Rede do servidor de IP: %s com sucesso!""".formatted(ipUser, hostNameUser, ipServidor);
                     setLog(descricao);
                     break;
                 }
@@ -450,7 +450,7 @@ public class DaoDados {
         Integer opcao = 1;
 
         String descricao = """
-                    : Usuário do IP %s, hostName: %s. Iniciou o processo de inserção no servidor de IP: %s com sucesso!""".formatted(ipUser, hostNameUser, ipServidor);
+                : Usuário do IP %s, hostName: %s. Iniciou o processo de inserção no servidor de IP: %s com sucesso!""".formatted(ipUser, hostNameUser, ipServidor);
         setLog(descricao);
 
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
@@ -695,7 +695,7 @@ public class DaoDados {
 
 
         if (mediaUsoCpu >= 85 && mediaUsoCpuServer >= 85) {
-            descricao = String.format("Alerta de Risco. Servidor %s: A utilização da %s esteve constantemente acima de 85%%, nas últimas %d verificação. Pode ocorrer Travamentos! Média de utilização: %.2f%%", ipServidor, componente, dias, mediaUsoCpuServer);
+            descricao = String.format("Alerta de Risco. Servidor %s: A utilização da %s esteve constantemente acima de 85%%, nas últimas %d verificações. Pode ocorrer Travamentos! Média de utilização: %.2f%%", ipServidor, componente, dias, mediaUsoCpuServer);
 
             tipo = "Em risco";
 
@@ -709,7 +709,7 @@ public class DaoDados {
 
 
         } else if (mediaUsoCpu >= 66 && mediaUsoCpu <= 84 && mediaUsoCpuServer >= 66 && mediaUsoCpuServer <= 84) {
-            descricao = String.format("Alerta de Cuidado. Servidor %s: A utilização da %s esteve constantemente entre 66%% a 84%%, nas últimas %d verificação. Pode ocorrer lentidão! Média de utilização: %.2f%%", ipServidor, componente, dias, mediaUsoCpuServer);
+            descricao = String.format("Alerta de Cuidado. Servidor %s: A utilização da %s esteve constantemente entre 66%% a 84%%, nas últimas %d verificações. Pode ocorrer lentidão! Média de utilização: %.2f%%", ipServidor, componente, dias, mediaUsoCpuServer);
 
             tipo = "Cuidado";
 
@@ -722,7 +722,7 @@ public class DaoDados {
             setLog(logAlerta);
 
         } else {
-            descricao = String.format("Alerta Estável. Servidor %s: A utilização da %s está abaixo de 66%%, últimas %d verificação. A utilização está boa! Média de utilização: %.2f%%", ipServidor, componente, dias, mediaUsoCpuServer);
+            descricao = String.format("Alerta Estável. Servidor %s: A utilização da %s está abaixo de 66%%, últimas %d verificações. A utilização está boa! Média de utilização: %.2f%%", ipServidor, componente, dias, mediaUsoCpuServer);
 
             tipo = "Estável";
 
@@ -735,7 +735,7 @@ public class DaoDados {
         Slack.sendMessage(json);
 
         if (temperatura > 39 && temperaturaServer > 39) {
-            descricao2 = String.format("Alerta de Risco. Servidor %s: A Temperatura da %s está acima de 39°C, nas últimas %d verificação! Risco de Super Aquecimento!. Média de temperatura: %.2f°C", ipServidor, componente, dias, temperaturaServer);
+            descricao2 = String.format("Alerta de Risco. Servidor %s: A Temperatura da %s está acima de 39°C, nas últimas %d verificações! Risco de Super Aquecimento!. Média de temperatura: %.2f°C", ipServidor, componente, dias, temperaturaServer);
 
             tipo = "Em risco";
 
@@ -749,7 +749,7 @@ public class DaoDados {
 
 
         } else if (temperatura >= 35 && temperatura <= 39 && temperaturaServer >= 35 && temperaturaServer <= 39) {
-            descricao2 = String.format("Alerta de Cuidado. Servidor %s: A Temperatura da %s está entre 35°C a 39°C, nas últimas %d verificação. Pode ocorrer aquecimento! média de temperatura: %.2f°C", ipServidor, componente, dias, temperaturaServer);
+            descricao2 = String.format("Alerta de Cuidado. Servidor %s: A Temperatura da %s está entre 35°C a 39°C, nas últimas %d verificações. Pode ocorrer aquecimento! média de temperatura: %.2f°C", ipServidor, componente, dias, temperaturaServer);
 
             tipo = "Cuidado";
 
@@ -761,7 +761,7 @@ public class DaoDados {
             setLog(logAlerta);
 
         } else {
-            descricao2 = String.format("Alerta Estável. Servidor %s: A Temperatura da %s está abaixo de 35°C, nas últimas %d verificação. Temperatura está OK! Média de temperatura: %.2f°C", ipServidor, componente, dias, temperaturaServer);
+            descricao2 = String.format("Alerta Estável. Servidor %s: A Temperatura da %s está abaixo de 35°C, nas últimas %d verificações. Temperatura está OK! Média de temperatura: %.2f°C", ipServidor, componente, dias, temperaturaServer);
 
             tipo = "Estável";
 
@@ -831,7 +831,7 @@ public class DaoDados {
 
 
         if (mediaUsoRam > (capacidadeTotalRam * .85) && mediaUsoRamServer > (capacidadeTotalRamServer * .85)) {
-            descricao = String.format("Alerta de Risco. Servidor %s: A utilização da %s está constantemente acima de 85%% da memória total, nas ultimas %d verificação. Risco de travamento! Média de utilização: %.2fGB", ipServidor, componente, dias, mediaUsoRamServer);
+            descricao = String.format("Alerta de Risco. Servidor %s: A utilização da %s está constantemente acima de 85%% da memória total, nas ultimas %d verificações. Risco de travamento! Média de utilização: %.2fGB", ipServidor, componente, dias, mediaUsoRamServer);
 
             tipo = "Em risco";
 
@@ -843,8 +843,8 @@ public class DaoDados {
             setLog(logAlerta);
 
 
-        } else if (mediaUsoRam <=(capacidadeTotalRam * .85) && mediaUsoRam >= (capacidadeTotalRam * .66) && mediaUsoRamServer <=(capacidadeTotalRamServer * .85) && mediaUsoRamServer >= (capacidadeTotalRamServer * .66)) {
-            descricao = String.format("Alerta de Cuidado. Servidor %s: A utilização da %s está ocilando entre 66%% a 85%% da memória total, nas ultimas %d verificação. Pode ocorrer lentidão! Média de utilização: %.2fGB", ipServidor, componente, dias, mediaUsoRamServer);
+        } else if (mediaUsoRam <= (capacidadeTotalRam * .85) && mediaUsoRam >= (capacidadeTotalRam * .66) && mediaUsoRamServer <= (capacidadeTotalRamServer * .85) && mediaUsoRamServer >= (capacidadeTotalRamServer * .66)) {
+            descricao = String.format("Alerta de Cuidado. Servidor %s: A utilização da %s está ocilando entre 66%% a 85%% da memória total, nas ultimas %d verificações. Pode ocorrer lentidão! Média de utilização: %.2fGB", ipServidor, componente, dias, mediaUsoRamServer);
 
             tipo = "Cuidado";
 
@@ -856,12 +856,12 @@ public class DaoDados {
             setLog(logAlerta);
 
         } else {
-            descricao = String.format("Alerta Estável. Servidor %s: A utilização da %s está abaixo de 66%% da memória total, ultimas %d verificação. A Ram está OK! Média de utilização: %.2fGB", ipServidor, componente, dias, mediaUsoRamServer);
+            descricao = String.format("Alerta Estável. Servidor %s: A utilização da %s está abaixo de 66%% da memória total, ultimas %d verificações. A Ram está OK! Média de utilização: %.2fGB", ipServidor, componente, dias, mediaUsoRamServer);
 
             tipo = "Estável";
 
             con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresa, fkDataCenter, ipServidor, fkRam, fkLeitura);
-            conServer.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (GETDATE(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresa, fkDataCenter, ipServidor, fkRamServer, fkLeituraServer);
+            conServer.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (GETDATE(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresaServer, fkDataCenterServer, ipServidor, fkRamServer, fkLeituraServer);
         }
         json.put("text", descricao);
 
@@ -917,7 +917,7 @@ public class DaoDados {
 
 
         if (mediaUsoDisk > 85 && mediaUsoDiskServer > 85) {
-            descricao = String.format("Alerta de Risco. Servidor %s: A utilização do %s está acima de 85%% do armazenamento total, nas ultimas %d verificação. Pouco espaço no disco! média de utilização: %.2f%%", ipServidor, componente, dias, mediaUsoDiskServer);
+            descricao = String.format("Alerta de Risco. Servidor %s: A utilização do %s está acima de 85%% do armazenamento total, nas ultimas %d verificações. Pouco espaço no disco! média de utilização: %.2f%%", ipServidor, componente, dias, mediaUsoDiskServer);
 
             tipo = "Em risco";
 
@@ -930,7 +930,7 @@ public class DaoDados {
 
 
         } else if (mediaUsoDisk >= 66 && mediaUsoDisk <= 85 && mediaUsoDiskServer >= 66 && mediaUsoDiskServer <= 85) {
-            descricao = String.format("Alerta de Cuidado. Servidor %s: A utilização do %s está entre de 66%% a 85%% do armazenamento total, nas ultimas %d verificação. Espaço razoável no disco! média de utilização: %.2f%%", ipServidor, componente, dias, mediaUsoDiskServer);
+            descricao = String.format("Alerta de Cuidado. Servidor %s: A utilização do %s está entre de 66%% a 85%% do armazenamento total, nas ultimas %d verificações. Espaço razoável no disco! média de utilização: %.2f%%", ipServidor, componente, dias, mediaUsoDiskServer);
 
             tipo = "Cuidado";
 
@@ -943,7 +943,7 @@ public class DaoDados {
 
         } else {
 
-            descricao = String.format("Alerta Estável. Servidor %s: A utilização do %s está abaixo de 66%% do armazenamento total, ultimas %d verificação. Espaço no disco OK! Média de utilização: %.2f%%", ipServidor, componente, dias, mediaUsoDiskServer);
+            descricao = String.format("Alerta Estável. Servidor %s: A utilização do %s está abaixo de 66%% do armazenamento total, ultimas %d verificações. Espaço no disco OK! Média de utilização: %.2f%%", ipServidor, componente, dias, mediaUsoDiskServer);
 
             tipo = "Estável";
 
@@ -1025,7 +1025,7 @@ public class DaoDados {
 
 
         if (mediaUsoRedeUp < 20 && mediaUsoRedeUp < 20) {
-            descricao = String.format("Alerta de Risco. Servidor %s: O upload da %s está abaixo de 20Mbs, nas ultimas %d verificação. A rede está lenta! Média de utilização: %.2fMbs", ipServidor, componente, dias, mediaUsoRedeUpServer);
+            descricao = String.format("Alerta de Risco. Servidor %s: O upload da %s está abaixo de 20Mbs, nas ultimas %d verificações. A rede está lenta! Média de utilização: %.2fMbs", ipServidor, componente, dias, mediaUsoRedeUpServer);
 
             tipo = "Em risco";
 
@@ -1038,7 +1038,7 @@ public class DaoDados {
 
 
         } else if (mediaUsoRedeUp <= 89 && mediaUsoRedeUp >= 20 && mediaUsoRedeUpServer <= 89 && mediaUsoRedeUpServer >= 20) {
-            descricao = String.format("Alerta de Cuidado. Servidor %s: O upload da %s está entre 20Mbs a 89Mbs, nas ultimas %d verificação. A rede Pode ficar Lenta! Média de utilização: %.2fMbs", ipServidor, componente, dias, mediaUsoRedeUpServer);
+            descricao = String.format("Alerta de Cuidado. Servidor %s: O upload da %s está entre 20Mbs a 89Mbs, nas ultimas %d verificações. A rede Pode ficar Lenta! Média de utilização: %.2fMbs", ipServidor, componente, dias, mediaUsoRedeUpServer);
 
             tipo = "Cuidado";
 
@@ -1050,7 +1050,7 @@ public class DaoDados {
             setLog(logAlerta);
 
         } else {
-            descricao = String.format("Alerta Estável. Servidor %s: O upload da %s está acima dos 89Mbs, ultimas %d verificação. A rede está boa! Média de utilização: %.2fGBs", ipServidor, componente, dias, mediaUsoRedeUpServer);
+            descricao = String.format("Alerta Estável. Servidor %s: O upload da %s está acima dos 89Mbs, ultimas %d verificações. A rede está boa! Média de utilização: %.2fGBs", ipServidor, componente, dias, mediaUsoRedeUpServer);
 
             tipo = "Estável";
 
@@ -1060,7 +1060,7 @@ public class DaoDados {
 
 
         if (mediaUsoRedeDow < 40 && mediaUsoRedeDowServer < 40) {
-            descricao2 = String.format("Alerta de Risco. Servidor %s: O download da %s está abaixo de 40Mbs, nas ultimas %d verificação. A rede está lenta! Média de utilização: %.2fMbs", ipServidor, componente, dias, mediaUsoRedeDowServer);
+            descricao2 = String.format("Alerta de Risco. Servidor %s: O download da %s está abaixo de 40Mbs, nas ultimas %d verificações. A rede está lenta! Média de utilização: %.2fMbs", ipServidor, componente, dias, mediaUsoRedeDowServer);
 
             tipo = "Em risco";
 
@@ -1073,7 +1073,7 @@ public class DaoDados {
 
 
         } else if (mediaUsoRedeDow <= 89 && mediaUsoRedeDow >= 40 && mediaUsoRedeDowServer <= 89 && mediaUsoRedeDowServer >= 40) {
-            descricao2 = String.format("Alerta de Cuidado. Servidor %s: O download da %s está entre 40Mbs a 89Mbs, nas ultimas %d verificação. A rede Pode ficar Lenta! Média de utilização: %.2fMbs", ipServidor, componente, dias, mediaUsoRedeDowServer);
+            descricao2 = String.format("Alerta de Cuidado. Servidor %s: O download da %s está entre 40Mbs a 89Mbs, nas ultimas %d verificações. A rede Pode ficar Lenta! Média de utilização: %.2fMbs", ipServidor, componente, dias, mediaUsoRedeDowServer);
 
             tipo = "Cuidado";
 
@@ -1086,7 +1086,7 @@ public class DaoDados {
 
 
         } else {
-            descricao2 = String.format("Alerta Estável. Servidor %s: O download da %s está acima dos 89Mbs, ultimas %d verificação. A rede está boa! Média de utilização: %.2fMbs", ipServidor, componente, dias, mediaUsoRedeDowServer);
+            descricao2 = String.format("Alerta Estável. Servidor %s: O download da %s está acima dos 89Mbs, ultimas %d verificações. A rede está boa! Média de utilização: %.2fMbs", ipServidor, componente, dias, mediaUsoRedeDowServer);
 
             tipo = "Estável";
 

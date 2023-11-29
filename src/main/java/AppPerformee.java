@@ -29,7 +29,7 @@ public class AppPerformee {
 
             Boolean validacao = dao.buscarIp(ipServidor);
 
-            if (validacao == false) {
+            if (!validacao) {
                 System.out.println("Servidor não Encontrado!");
                 numTentativas--;
 

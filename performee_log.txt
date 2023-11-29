@@ -1,0 +1,36 @@
+2023/11/27 20:59:59: Usuário do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Acessou o Servidor de IP: 23235787664322 com Sucesso!
+2023/11/27 21:00:13: Usuário do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Iniciou o processo de inserção no servidor de IP: 23235787664322 com sucesso!
+2023/11/27 21:07:06: Usu�rio do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Acessou o Servidor de IP: 23235787664322 com Sucesso!
+2023/11/27 21:07:20: Usu�rio do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Iniciou o processo de inser��o no servidor de IP: 23235787664322 com sucesso!
+2023/11/27 21:11:37: Usu�rio do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Tentou acessar um servidor inexistente pela 1 vez!
+2023/11/27 21:11:43: Usu�rio do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Tentou acessar um servidor inexistente pela 2 vez!
+2023/11/27 21:11:48: Usu�rio do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Tentou acessar um servidor inexistente pela 3 vez!
+2023/11/27 21:11:56: Usu�rio do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Acessou o Servidor de IP: 23235787664322 com Sucesso!
+2023/11/27 21:12:43: Usu�rio do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Iniciou o processo de inser��o no servidor de IP: 23235787664322 com sucesso!
+2023/11/27 21:40:15: Usuário do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Acessou o Servidor de IP: 23235787664322 com Sucesso!
+2023/11/27 21:40:41: Usuário do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Tentou cadastrar os componentes do servidor de IP: 23235787664322, mas já existe componentes cadastrados
+2023/11/27 21:40:54: Usuário do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Atualizou a CPU do servidor de IP: 23235787664322 com sucesso!
+2023/11/27 21:41:16: Usuário do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Iniciou o processo de inserção no servidor de IP: 23235787664322 com sucesso!
+2023/11/28 19:50:19: Usuário do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Acessou o Servidor de IP: 34354223232323 com Sucesso!
+2023/11/28 19:50:32: Usuário do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Tentou cadastrar os componentes do servidor de IP: 34354223232323, mas já existe componentes cadastrados
+2023/11/28 19:50:47: Usuário do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Tentou cadastrar os componentes do servidor de IP: 34354223232323, mas já existe componentes cadastrados
+2023/11/28 19:50:57: Usuário do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Iniciou o processo de inserção no servidor de IP: 34354223232323 com sucesso!
+2023/11/28 19:51:18: Usuário do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Teve Alerta de Cuidado. Servidor 34354223232323: A utilização da Ram está ocilando entre 66% a 85% da memória total, nas ultimas 10 verificação. Pode ocorrer lentidão! Média de utilização: 6,43GB
+2023/11/28 19:55:29: Usuário do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Tentou acessar um servidor inexistente pela 1 vez!
+2023/11/28 19:55:34: Usuário do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Acessou o Servidor de IP: 34354223232323 com Sucesso!
+2023/11/28 19:55:46: Usuário do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Iniciou o processo de inserção no servidor de IP: 34354223232323 com sucesso!
+2023/11/28 19:58:38: Usuário do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Acessou o Servidor de IP: 34354223232323 com Sucesso!
+2023/11/28 19:58:43: Usuário do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Iniciou o processo de inserção no servidor de IP: 34354223232323 com sucesso!
+2023/11/28 20:17:26: Usuário do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Tentou acessar um servidor inexistente pela 1 vez!
+2023/11/28 20:17:31: Usuário do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Acessou o Servidor de IP: 34354223232323 com Sucesso!
+2023/11/28 20:17:37: Usuário do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Iniciou o processo de inserção no servidor de IP: 34354223232323 com sucesso!
+2023/11/28 20:20:21: Usuário do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Teve Alerta de Risco. Servidor 34354223232323: A utilização do Disco está acima de 85% do armazenamento total, nas ultimas 10 verificação. Pouco espaço no disco! média de utilização: 90,77%
+2023/11/28 20:23:06: Usuário do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Teve Alerta de Risco. Servidor 34354223232323: A utilização do Disco está acima de 85% do armazenamento total, nas ultimas 10 verificação. Pouco espaço no disco! média de utilização: 91,53%
+2023/11/28 20:47:33: Usuário do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Acessou o Servidor de IP: 34354223232323 com Sucesso!
+2023/11/28 20:47:40: Usuário do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Iniciou o processo de inserção no servidor de IP: 34354223232323 com sucesso!
+2023/11/28 20:50:23: Usuário do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Teve Alerta de Risco. Servidor 34354223232323: A utilização do Disco está acima de 85% do armazenamento total, nas ultimas 10 verificações. Pouco espaço no disco! média de utilização: 89,83%
+2023/11/28 20:53:08: Usuário do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Teve Alerta de Risco. Servidor 34354223232323: A utilização do Disco está acima de 85% do armazenamento total, nas ultimas 10 verificações. Pouco espaço no disco! média de utilização: 89,83%
+2023/11/28 20:55:53: Usuário do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Teve Alerta de Risco. Servidor 34354223232323: A utilização do Disco está acima de 85% do armazenamento total, nas ultimas 10 verificações. Pouco espaço no disco! média de utilização: 89,83%
+2023/11/28 20:57:51: Usuário do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Acessou o Servidor de IP: 34354223232323 com Sucesso!
+2023/11/28 20:57:58: Usuário do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Iniciou o processo de inserção no servidor de IP: 34354223232323 com sucesso!
+2023/11/28 21:00:42: Usuário do IP [8.8.8.8, 8.8.4.4], hostName: DESKTOP-BG90CUD. Teve Alerta de Risco. Servidor 34354223232323: A utilização do Disco está acima de 85% do armazenamento total, nas ultimas 10 verificações. Pouco espaço no disco! média de utilização: 89,83%
