@@ -908,9 +908,48 @@ public class DaoDados {
                 "    ORDER BY l.idLeitura DESC\n" +
                 "    LIMIT 10\n" +
                 ") AS ultimas_leituras;", Double.class, ipServidor);
+
         Double mediaUsoDiskServer = conServer.queryForObject("SELECT ROUND(AVG(emUso), 2) AS media_ultimas_10_leituras\n" +
                 "FROM (\n" +
                 "    SELECT TOP 10 emUso\n" +
+                "    FROM leitura AS l\n" +
+                "    JOIN componente AS c ON c.idComponente = l.fkComponente \n" +
+                "    WHERE c.tipo = 'Disco' AND l.fkServidor = ?\n" +
+                "    ORDER BY l.idLeitura DESC\n" +
+                ") AS ultimas_leituras;", Double.class, ipServidor);
+
+        Double mediaLeiura = con.queryForObject("SELECT ROUND(AVG(velocidadeLeitura), 2) AS media_ultimas_10_leituras\n" +
+                "FROM (\n" +
+                "    SELECT velocidadeLeitura\n" +
+                "    FROM leitura AS l\n" +
+                "    JOIN componente AS c ON c.idComponente = l.fkComponente \n" +
+                "    WHERE c.tipo = 'Disco' AND l.fkServidor = ?\n" +
+                "    ORDER BY l.idLeitura DESC\n" +
+                "    LIMIT 10\n" +
+                ") AS ultimas_leituras;", Double.class, ipServidor);
+
+        Double mediaLeituraServer = conServer.queryForObject("SELECT ROUND(AVG(velocidadeLeitura), 2) AS media_ultimas_10_leituras\n" +
+                "FROM (\n" +
+                "    SELECT TOP 10 velocidadeLeitura\n" +
+                "    FROM leitura AS l\n" +
+                "    JOIN componente AS c ON c.idComponente = l.fkComponente \n" +
+                "    WHERE c.tipo = 'Disco' AND l.fkServidor = ?\n" +
+                "    ORDER BY l.idLeitura DESC\n" +
+                ") AS ultimas_leituras;", Double.class, ipServidor);
+
+        Double mediaEscrita = con.queryForObject("SELECT ROUND(AVG(velocidadeEscrita), 2) AS media_ultimas_10_leituras\n" +
+                "FROM (\n" +
+                "    SELECT velocidadeEscrita\n" +
+                "    FROM leitura AS l\n" +
+                "    JOIN componente AS c ON c.idComponente = l.fkComponente \n" +
+                "    WHERE c.tipo = 'Disco' AND l.fkServidor = ?\n" +
+                "    ORDER BY l.idLeitura DESC\n" +
+                "    LIMIT 10\n" +
+                ") AS ultimas_leituras;", Double.class, ipServidor);
+
+        Double mediaEscritaServer = conServer.queryForObject("SELECT ROUND(AVG(velocidadeEscrita), 2) AS media_ultimas_10_leituras\n" +
+                "FROM (\n" +
+                "    SELECT TOP 10 velocidadeEscrita\n" +
                 "    FROM leitura AS l\n" +
                 "    JOIN componente AS c ON c.idComponente = l.fkComponente \n" +
                 "    WHERE c.tipo = 'Disco' AND l.fkServidor = ?\n" +
@@ -936,6 +975,8 @@ public class DaoDados {
         String componente = "Disco";
         String tipo;
         String descricao;
+        String descricao2;
+        String descricao3;
         Integer dias = 10;
 
 
@@ -975,6 +1016,84 @@ public class DaoDados {
 
         }
         json.put("text", descricao);
+
+        Slack.sendMessage(json);
+
+        if (mediaLeituraServer < 80) {
+            descricao2 = String.format("Alerta de Risco. Servidor %s: A velocidade de leitura do %s está abaixo de 80Mbs, nas ultimas %d verificações. Leitura do disco baixa! média de leitura: %.2fMBs", ipServidor, componente, dias, mediaLeituraServer);
+
+            tipo = "Em risco";
+
+            con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)", tipo, descricao2, fkEmpresa, fkDataCenter, ipServidor, fkDisco, fkLeitura);
+            conServer.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (GETDATE(),?,?,?,?,?,?,?)", tipo, descricao2, fkEmpresaServer, fkDataCenterServer, ipServidor, fkDiscoServer, fkLeituraServer);
+
+            String logAlerta = """
+                    : Usuário do IP %s, hostName: %s. Teve %s""".formatted(ipUser, hostNameUser, descricao2);
+            setLog(logAlerta);
+
+
+        } else if (mediaLeituraServer < 100 && mediaLeituraServer >= 80) {
+            descricao2 = String.format("Alerta de Cuidado. Servidor %s: A velocidade de leitura do %s está entre 80MBs e 100MBs, nas ultimas %d verificações. Leitura do disco preocupante! média de leitura: %.2fMBs", ipServidor, componente, dias, mediaLeituraServer);
+
+            tipo = "Cuidado";
+
+            con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)", tipo, descricao2, fkEmpresa, fkDataCenter, ipServidor, fkDisco, fkLeitura);
+            conServer.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (GETDATE(),?,?,?,?,?,?,?)", tipo, descricao2, fkEmpresaServer, fkDataCenterServer, ipServidor, fkDiscoServer, fkLeituraServer);
+
+            String logAlerta = """
+                    : Usuário do IP %s, hostName: %s. Teve %s""".formatted(ipUser, hostNameUser, descricao2);
+            setLog(logAlerta);
+
+        } else {
+
+            descricao2 = String.format("Alerta Estável. Servidor %s: A velocidade de leitura do %s está acima 100MBs, nas ultimas %d verificações. Leitura do disco OK! média de leitura: %.2fMBs", ipServidor, componente, dias, mediaLeituraServer);
+
+            tipo = "Estável";
+
+            con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)", tipo, descricao2, fkEmpresa, fkDataCenter, ipServidor, fkDisco, fkLeitura);
+            conServer.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (GETDATE(),?,?,?,?,?,?,?)", tipo, descricao2, fkEmpresaServer, fkDataCenterServer, ipServidor, fkDiscoServer, fkLeituraServer);
+
+        }
+        json.put("text", descricao2);
+
+        Slack.sendMessage(json);
+
+        if (mediaEscritaServer < 30) {
+            descricao3 = String.format("Alerta de Risco. Servidor %s: A velocidade de escrita do %s está abaixo de 30Mbs, nas ultimas %d verificações. escrita do disco baixa! média de leitura: %.2fMBs", ipServidor, componente, dias, mediaLeituraServer);
+
+            tipo = "Em risco";
+
+            con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)", tipo, descricao3, fkEmpresa, fkDataCenter, ipServidor, fkDisco, fkLeitura);
+            conServer.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (GETDATE(),?,?,?,?,?,?,?)", tipo, descricao3, fkEmpresaServer, fkDataCenterServer, ipServidor, fkDiscoServer, fkLeituraServer);
+
+            String logAlerta = """
+                    : Usuário do IP %s, hostName: %s. Teve %s""".formatted(ipUser, hostNameUser, descricao3);
+            setLog(logAlerta);
+
+
+        } else if (mediaEscritaServer < 45 && mediaEscritaServer >= 30) {
+            descricao3 = String.format("Alerta de Cuidado. Servidor %s: A velocidade de leitura do %s está entre 80MBs e 100MBs, nas ultimas %d verificações. Leitura do disco preocupante! média de leitura: %.2fMBs", ipServidor, componente, dias, mediaLeituraServer);
+
+            tipo = "Cuidado";
+
+            con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)", tipo, descricao3, fkEmpresa, fkDataCenter, ipServidor, fkDisco, fkLeitura);
+            conServer.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (GETDATE(),?,?,?,?,?,?,?)", tipo, descricao3, fkEmpresaServer, fkDataCenterServer, ipServidor, fkDiscoServer, fkLeituraServer);
+
+            String logAlerta = """
+                    : Usuário do IP %s, hostName: %s. Teve %s""".formatted(ipUser, hostNameUser, descricao3);
+            setLog(logAlerta);
+
+        } else {
+
+            descricao3 = String.format("Alerta Estável. Servidor %s: A velocidade de leitura do %s está acima 100MBs, nas ultimas %d verificações. Leitura do disco OK! média de leitura: %.2fMBs", ipServidor, componente, dias, mediaLeituraServer);
+
+            tipo = "Estável";
+
+            con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)", tipo, descricao3, fkEmpresa, fkDataCenter, ipServidor, fkDisco, fkLeitura);
+            conServer.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (GETDATE(),?,?,?,?,?,?,?)", tipo, descricao3, fkEmpresaServer, fkDataCenterServer, ipServidor, fkDiscoServer, fkLeituraServer);
+
+        }
+        json.put("text", descricao3);
 
         Slack.sendMessage(json);
 
