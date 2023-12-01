@@ -220,7 +220,7 @@ public class DaoDados {
         if (countServer != 0) {
 
             System.out.println("""
-                    Já existe %d componentes cadastrado!""".formatted(countServer));
+                    \033[1;33mJá existe %d componentes cadastrado!\033[m""".formatted(countServer));
 
             String descricao = """
                     : Usuário do IP %s, hostName: %s. Tentou cadastrar os componentes do servidor de IP: %s, mas já existe componentes cadastrados""".formatted(ipUser, hostNameUser, ipServidor);
@@ -292,7 +292,7 @@ public class DaoDados {
         }
         if (count != 0) {
             System.out.println("""
-                    Já existe %d componentes cadastrado no banco local!""".formatted(countServer));
+                    \033[1;33mJá existe %d componentes cadastrado no banco local!\033[m""".formatted(countServer));
 
         } else {
 
@@ -364,7 +364,7 @@ public class DaoDados {
 
         if (countServer == 0) {
             System.out.println("""
-                    Não existe componentes cadastrados nesse servidor!
+                    \033[1;33mNão existe componentes cadastrados nesse servidor!\033[m
                     Cadastrando agora...""");
 
             inserirComponente();
@@ -460,7 +460,7 @@ public class DaoDados {
                     break;
                 }
                 default: {
-                    System.out.println("Opção inválida! digite novamente");
+                    System.out.println("Opção \033[1;31minválida!\033[m digite novamente");
                 }
             }
         }

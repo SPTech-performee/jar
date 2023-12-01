@@ -17,7 +17,7 @@ public class AppPerformee {
 
         System.out.println("""
                 +-------------------------------+
-                |   Bem vindo ao performee.     |""");
+                |   Bem vindo ao \033[1;34mperformee.\033[m     |""");
 
 
         do {
@@ -34,25 +34,26 @@ public class AppPerformee {
                 numTentativas--;
 
                 if (numTentativas == 0) {
-                    System.out.println("Acabou suas tentativas! Volte mais tarde");
+                    System.out.println("\033[1;31mAcabou suas tentativas! Volte mais tarde\033[m");
                     String descricao = """
                     : Usuário do IP %s, hostName: %s. Esgotou o número máximo de tentativas para acessar o servidor! e o JAR foi encerrado""".formatted(dao.getIpUser(), dao.getHostNameUser(), ipServidor);
                     dao.setLog(descricao);
                     System.exit(0);
                 }
                 System.out.println("""
-                        Você tem %d tentativas!""".formatted(numTentativas));
+                        Você tem \033[1;31m%d\033[m tentativas!""".formatted(numTentativas));
             } else {
+                System.out.println("\033[1;32mServidor encontrado!\033[m");
                 do {
 
                     System.out.println("""
                             +-------------------------------+
-                            | 1) Cadastrar componentes      |
-                            | 2) Atualizar componentes      |
-                            | 3) Inserir dados de leitura   |
-                            | 4) Ver Componentes            |
-                            | 5) Ver Leituras               |
-                            | 6) Sair                       |
+                            | \033[1;35m1)\033[m Cadastrar componentes      |
+                            | \033[1;35m2)\033[m Atualizar componentes      |
+                            | \033[1;35m3)\033[m Inserir dados de leitura   |
+                            | \033[1;35m4)\033[m Ver Componentes            |
+                            | \033[1;35m5)\033[m Ver Leituras               |
+                            | \033[1;35m6)\033[m Sair                       |
                             +-------------------------------+""");
 
                     opcao = leitor.nextInt();
@@ -70,11 +71,11 @@ public class AppPerformee {
                                         +--------------------------------------+
                                         | Qual componente deseja atualizar?    |
                                         +--------------------------------------+
-                                        | 1) Atualizar CPU                     |
-                                        | 2) Atualizar RAM                     |
-                                        | 3) Atualizar Disco                   |
-                                        | 4) Atualizar Rede                    |
-                                        | 5) Cancelar                          |
+                                        | \033[1;35m1)\033[m Atualizar CPU                     |
+                                        | \033[1;35m2)\033[m Atualizar RAM                     |
+                                        | \033[1;35m3)\033[m Atualizar Disco                   |
+                                        | \033[1;35m4)\033[m Atualizar Rede                    |
+                                        | \033[1;35m5)\033[m Cancelar                          |
                                         +--------------------------------------+""");
                                 opcaoAtualizar = leitor.nextInt();
 
@@ -126,7 +127,7 @@ public class AppPerformee {
                             System.exit(0);
                         }
                         default: {
-                            System.out.println("Opção inválida! digite novamente");
+                            System.out.println("Opção \033[1;31minválida!\033[m digite novamente");
                         }
                     }
                 } while (opcao != 3);
