@@ -1,6 +1,7 @@
 package Dao;
 
 import Conexao.Conexao;
+import Slack.SlackConfig;
 import com.github.britooo.looca.api.core.Looca;
 import com.github.britooo.looca.api.group.discos.Disco;
 import com.github.britooo.looca.api.group.discos.DiscoGrupo;
@@ -13,11 +14,9 @@ import com.github.britooo.looca.api.group.temperatura.Temperatura;
 import com.github.britooo.looca.api.util.Conversor;
 import com.slack.api.methods.SlackApiException;
 import Modelo.*;
-import org.json.JSONObject;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.FileStore;
@@ -26,11 +25,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.*;
 
 import java.util.List;
@@ -43,6 +43,10 @@ public class DaoDados {
     private Memoria memoria = looca.getMemoria();
     private String hostNameUser = looca.getRede().getParametros().getNomeDeDominio();
     private String ipUser = looca.getRede().getParametros().getServidoresDns().toString();
+
+//  -> Inserir o token e o canal do slack, respectivamente <-
+    SlackConfig slack = new SlackConfig("", "");
+
     private String ipServidor;
     private Integer fkEmpresa;
     private Integer fkEmpresaServer;
@@ -218,14 +222,12 @@ public class DaoDados {
         Integer countServer = conServer.queryForObject("SELECT COUNT(*) FROM Componente where tipo != 'GPU' and fkServidor = ?", Integer.class, ipServidor);
 
         if (countServer != 0) {
-
             System.out.println("""
                     \033[1;33mJá existe %d componentes cadastrado!\033[m""".formatted(countServer));
 
             String descricao = """
                     : Usuário do IP %s, hostName: %s. Tentou cadastrar os componentes do servidor de IP: %s, mas já existe componentes cadastrados""".formatted(ipUser, hostNameUser, ipServidor);
             setLog(descricao);
-
 
         } else {
             switch (1) {
@@ -467,6 +469,10 @@ public class DaoDados {
     }
 
     public void inserirLeitura() {
+        Timer cronometro = new Timer();
+        Timer cronometro2 = new Timer();
+        Timer cronometro3 = new Timer();
+
         Conexao conexao = new Conexao();
         JdbcTemplate con = conexao.getConexaoDoBanco();
         JdbcTemplate conServer = conexao.getConexaoDoBancoServer();
@@ -476,135 +482,141 @@ public class DaoDados {
                 : Usuário do IP %s, hostName: %s. Iniciou o processo de inserção no servidor de IP: %s com sucesso!""".formatted(ipUser, hostNameUser, ipServidor);
         setLog(descricao);
 
-        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-        Runnable task = () -> {
-            switch (opcao) {
-                case 1: {
-                    idComponente = con.queryForObject("SELECT idComponente FROM Componente where tipo = 'CPU' and fkServidor = ?", Integer.class, ipServidor);
-                    idComponenteServer = conServer.queryForObject("SELECT idComponente FROM Componente where tipo = 'CPU' and fkServidor = ?", Integer.class, ipServidor);
+            cronometro3.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    switch (opcao) {
+                        case 1: {
+                            idComponente = con.queryForObject("SELECT idComponente FROM Componente where tipo = 'CPU' and fkServidor = ?", Integer.class, ipServidor);
+                            idComponenteServer = conServer.queryForObject("SELECT idComponente FROM Componente where tipo = 'CPU' and fkServidor = ?", Integer.class, ipServidor);
 
-                    Double emUso = processador.getUso();
-                    String tempoAtivdade = Conversor.formatarSegundosDecorridos(sistema.getTempoDeAtividade());
-                    Double temperatura = temp.getTemperatura();
-                    Double frequencia = (double) processador.getFrequencia() / 1000000000.0;
+                            Double emUso = processador.getUso();
+                            String tempoAtivdade = Conversor.formatarSegundosDecorridos(sistema.getTempoDeAtividade());
+                            Double temperatura = temp.getTemperatura();
+                            Double frequencia = (double) processador.getFrequencia() / 1000000000.0;
 
-                    con.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, temperatura, frequencia, fkMedidaTemp, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (now(),ROUND(?, 2),?,?,?,6,?,?,?,?)", emUso, tempoAtivdade, temperatura, frequencia, fkEmpresa, fkDataCenter, ipServidor, idComponente);
+                            con.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, temperatura, frequencia, fkMedidaTemp, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (now(),ROUND(?, 2),?,?,?,6,?,?,?,?)", emUso, tempoAtivdade, temperatura, frequencia, fkEmpresa, fkDataCenter, ipServidor, idComponente);
 
-                    conServer.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, temperatura, frequencia, fkMedidaTemp, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (GETDATE(),ROUND(?, 2),?,?,?,6,?,?,?,?)", emUso, tempoAtivdade, temperatura, frequencia, fkEmpresaServer, fkDataCenterServer, ipServidor, idComponenteServer);
+                            conServer.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, temperatura, frequencia, fkMedidaTemp, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (GETDATE(),ROUND(?, 2),?,?,?,6,?,?,?,?)", emUso, tempoAtivdade, temperatura, frequencia, fkEmpresaServer, fkDataCenterServer, ipServidor, idComponenteServer);
 
-                    System.out.println("Enviando Leitura da CPU");
-                }
-                case 2: {
-                    idComponente = con.queryForObject("SELECT idComponente FROM Componente where tipo = 'RAM' and fkServidor = ?", Integer.class, ipServidor);
+                            System.out.println("Enviando Leitura da CPU");
+                        }
+                        case 2: {
+                            idComponente = con.queryForObject("SELECT idComponente FROM Componente where tipo = 'RAM' and fkServidor = ?", Integer.class, ipServidor);
 
-                    idComponenteServer = conServer.queryForObject("SELECT idComponente FROM Componente where tipo = 'RAM' and fkServidor = ?", Integer.class, ipServidor);
+                            idComponenteServer = conServer.queryForObject("SELECT idComponente FROM Componente where tipo = 'RAM' and fkServidor = ?", Integer.class, ipServidor);
 
-                    Double emUso = memoria.getEmUso() / 1073741824.0;
-                    String tempoAtivdade = Conversor.formatarSegundosDecorridos(sistema.getTempoDeAtividade());
-                    Double temperatura = null;
-                    Double frequencia = null;
+                            Double emUso = memoria.getEmUso() / 1073741824.0;
+                            String tempoAtivdade = Conversor.formatarSegundosDecorridos(sistema.getTempoDeAtividade());
+                            Double temperatura = null;
+                            Double frequencia = null;
 
-                    con.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, temperatura, frequencia, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (now(),ROUND(?, 2),?,?,?,?,?,?,?)", emUso, tempoAtivdade, temperatura, frequencia, fkEmpresa, fkDataCenter, ipServidor, idComponente);
+                            con.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, temperatura, frequencia, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (now(),ROUND(?, 2),?,?,?,?,?,?,?)", emUso, tempoAtivdade, temperatura, frequencia, fkEmpresa, fkDataCenter, ipServidor, idComponente);
 
-                    conServer.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, temperatura, frequencia, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (GETDATE(),ROUND(?, 2),?,?,?,?,?,?,?)", emUso, tempoAtivdade, temperatura, frequencia, fkEmpresaServer, fkDataCenterServer, ipServidor, idComponenteServer);
-                    System.out.println("Enviando Leitura da RAM");
+                            conServer.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, temperatura, frequencia, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (GETDATE(),ROUND(?, 2),?,?,?,?,?,?,?)", emUso, tempoAtivdade, temperatura, frequencia, fkEmpresaServer, fkDataCenterServer, ipServidor, idComponenteServer);
+                            System.out.println("Enviando Leitura da RAM");
 
-                }
-                case 3: {
+                        }
+                        case 3: {
 
-                    //Criação do gerenciador
-                    DiscoGrupo grupoDeDiscos = looca.getGrupoDeDiscos();
+                            //Criação do gerenciador
+                            DiscoGrupo grupoDeDiscos = looca.getGrupoDeDiscos();
 
-                    //Obtendo lista de discos a partir do getter
-                    List<Disco> discos = grupoDeDiscos.getDiscos();
+                            //Obtendo lista de discos a partir do getter
+                            List<Disco> discos = grupoDeDiscos.getDiscos();
 
-                    idComponente = con.queryForObject("SELECT idComponente FROM Componente where tipo = 'Disco' and fkServidor = ?", Integer.class, ipServidor);
-                    idComponenteServer = conServer.queryForObject("SELECT idComponente FROM Componente where tipo = 'Disco' and fkServidor = ?", Integer.class, ipServidor);
+                            idComponente = con.queryForObject("SELECT idComponente FROM Componente where tipo = 'Disco' and fkServidor = ?", Integer.class, ipServidor);
+                            idComponenteServer = conServer.queryForObject("SELECT idComponente FROM Componente where tipo = 'Disco' and fkServidor = ?", Integer.class, ipServidor);
 
 
-                    for (Disco arm : discos) {
-                        for (FileStore store : FileSystems.getDefault().getFileStores()) {
-                            try {
-                                long total = store.getTotalSpace() / 1024 / 1024 / 1024;
-                                long usado = (store.getTotalSpace() - store.getUnallocatedSpace()) / 1024 / 1024 / 1024;
+                            for (Disco arm : discos) {
+                                for (FileStore store : FileSystems.getDefault().getFileStores()) {
+                                    try {
+                                        long total = store.getTotalSpace() / 1024 / 1024 / 1024;
+                                        long usado = (store.getTotalSpace() - store.getUnallocatedSpace()) / 1024 / 1024 / 1024;
 
-                                double porcUso = (double) usado / total * 100;
+                                        double porcUso = (double) usado / total * 100;
 
-                                Double emUso = porcUso;
+                                        Double emUso = porcUso;
+                                        String tempoAtivdade = Conversor.formatarSegundosDecorridos(sistema.getTempoDeAtividade());
+                                        //bytes em mb
+                                        Double velocidadeLeitura = arm.getBytesDeLeitura() / 1048576.0;
+                                        Double velocidadeEscrita = arm.getBytesDeEscritas() / 1048576.0;
+
+                                        con.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, velocidadeLeitura, velocidadeEscrita, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (now(),ROUND(?, 2),?,ROUND(?, 2),ROUND(?, 2),?,?,?,?)", emUso, tempoAtivdade, velocidadeLeitura, velocidadeEscrita, fkEmpresa, fkDataCenter, ipServidor, idComponente);
+                                        conServer.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, velocidadeLeitura, velocidadeEscrita, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (GETDATE(),ROUND(?, 2),?,ROUND(?, 2),ROUND(?, 2),?,?,?,?)", emUso, tempoAtivdade, velocidadeLeitura, velocidadeEscrita, fkEmpresaServer, fkDataCenterServer, ipServidor, idComponenteServer);
+
+                                    } catch (IOException e) {
+                                        System.err.println(e);
+                                    }
+                                    break;
+                                }
+                                break;
+                            }
+                            System.out.println("Enviando Leitura do Disco");
+                        }
+                        case 4: {
+                            //Criação do gerenciador
+                            RedeInterfaceGroup grupoDeRedes = looca.getRede().getGrupoDeInterfaces();
+
+                            //Obtendo lista de discos a partir do getter
+                            List<RedeInterface> GpRede = grupoDeRedes.getInterfaces();
+
+
+                            idComponente = con.queryForObject("SELECT idComponente FROM Componente where tipo = 'Rede' and fkServidor = ?", Integer.class, ipServidor);
+                            idComponenteServer = conServer.queryForObject("SELECT idComponente FROM Componente where tipo = 'Rede' and fkServidor = ?", Integer.class, ipServidor);
+
+
+                            for (RedeInterface rede : GpRede) {
+                                Double emUso = null;
                                 String tempoAtivdade = Conversor.formatarSegundosDecorridos(sistema.getTempoDeAtividade());
                                 //bytes em mb
-                                Double velocidadeLeitura = arm.getBytesDeLeitura() / 1048576.0;
-                                Double velocidadeEscrita = arm.getBytesDeEscritas() / 1048576.0;
+                                Double upload = rede.getBytesEnviados() / 1e6;
+                                Double download = rede.getBytesRecebidos() / 1e6;
 
-                                con.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, velocidadeLeitura, velocidadeEscrita, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (now(),ROUND(?, 2),?,ROUND(?, 2),ROUND(?, 2),?,?,?,?)", emUso, tempoAtivdade, velocidadeLeitura, velocidadeEscrita, fkEmpresa, fkDataCenter, ipServidor, idComponente);
-                                conServer.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, velocidadeLeitura, velocidadeEscrita, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (GETDATE(),ROUND(?, 2),?,ROUND(?, 2),ROUND(?, 2),?,?,?,?)", emUso, tempoAtivdade, velocidadeLeitura, velocidadeEscrita, fkEmpresaServer, fkDataCenterServer, ipServidor, idComponenteServer);
 
-                            } catch (IOException e) {
-                                System.err.println(e);
+                                con.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, upload, download, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (now(),ROUND(?, 2),?,ROUND(?, 2),ROUND(?, 2),?,?,?,?)", emUso, tempoAtivdade, upload, download, fkEmpresa, fkDataCenter, ipServidor, idComponente);
+                                conServer.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, upload, download, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (GETDATE(),ROUND(?, 2),?,ROUND(?, 2),ROUND(?, 2),?,?,?,?)", emUso, tempoAtivdade, upload, download, fkEmpresaServer, fkDataCenterServer, ipServidor, idComponenteServer);
+                                break;
                             }
-                            break;
                         }
-                        break;
-                    }
-                    System.out.println("Enviando Leitura do Disco");
-                }
-                case 4: {
-                    //Criação do gerenciador
-                    RedeInterfaceGroup grupoDeRedes = looca.getRede().getGrupoDeInterfaces();
-
-                    //Obtendo lista de discos a partir do getter
-                    List<RedeInterface> GpRede = grupoDeRedes.getInterfaces();
-
-
-                    idComponente = con.queryForObject("SELECT idComponente FROM Componente where tipo = 'Rede' and fkServidor = ?", Integer.class, ipServidor);
-                    idComponenteServer = conServer.queryForObject("SELECT idComponente FROM Componente where tipo = 'Rede' and fkServidor = ?", Integer.class, ipServidor);
-
-
-                    for (RedeInterface rede : GpRede) {
-                        Double emUso = null;
-                        String tempoAtivdade = Conversor.formatarSegundosDecorridos(sistema.getTempoDeAtividade());
-                        //bytes em mb
-                        Double upload = rede.getBytesEnviados() / 1e6;
-                        Double download = rede.getBytesRecebidos() / 1e6;
-
-
-                        con.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, upload, download, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (now(),ROUND(?, 2),?,ROUND(?, 2),ROUND(?, 2),?,?,?,?)", emUso, tempoAtivdade, upload, download, fkEmpresa, fkDataCenter, ipServidor, idComponente);
-                        conServer.update("insert into Leitura(dataLeitura, emUso, TempoAtividade, upload, download, fkEmpresa, fkDataCenter, fkServidor, fkComponente) values (GETDATE(),ROUND(?, 2),?,ROUND(?, 2),ROUND(?, 2),?,?,?,?)", emUso, tempoAtivdade, upload, download, fkEmpresaServer, fkDataCenterServer, ipServidor, idComponenteServer);
-                        break;
+                        System.out.println("Enviando Leitura da Rede");
                     }
                 }
-                System.out.println("Enviando Leitura da Rede");
-            }
-            try {
-                alertaCpu();
-                alertaRam();
-            } catch (SlackApiException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+            }, 1000, 15000);
 
-            if (emitirAlerta == 0) {
-                try {
-                    alertaDisco();
-                    alertaRede();
-                } catch (SlackApiException e) {
-                    throw new RuntimeException(e);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+            cronometro.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    try {
+                        alertaCpu();
+                        alertaRam();
+                    } catch (SlackApiException e) {
+                        throw new RuntimeException(e);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
-                emitirAlerta = 10;
-            } else {
-                emitirAlerta--;
-            }
-        };
-        executor.scheduleAtFixedRate(task, 0, 15, TimeUnit.SECONDS);
-    }
+            }, 5000, 60000);
 
+            cronometro2.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    try {
+                        alertaDisco();
+                        alertaRede();
+                    } catch (SlackApiException e) {
+                        throw new RuntimeException(e);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }, 5000, 120000);
+      };
 
     public List<Componentes> exibirComponentes() {
         Conexao conexao = new Conexao();
@@ -651,8 +663,6 @@ public class DaoDados {
         Conexao conexao = new Conexao();
         JdbcTemplate con = conexao.getConexaoDoBanco();
         JdbcTemplate conServer = conexao.getConexaoDoBancoServer();
-        JSONObject json = new JSONObject();
-        JSONObject json2 = new JSONObject();
 
         Double mediaUsoCpuServer = conServer.queryForObject("SELECT ROUND(AVG(emUso), 2) AS media_ultimas_10_leituras\n" +
                 "FROM (\n" +
@@ -732,9 +742,8 @@ public class DaoDados {
 
             conServer.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (GETDATE(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresaServer, fkDataCenterServer, ipServidor, fkCpuServer, fkLeituraServer);
         }
-        json.put("text", descricao);
 
-        Slack.sendMessage(json);
+        slack.enviarAlerta(descricao);
 
         if (temperaturaServer > 39) {
             descricao2 = String.format("Alerta de Risco. Servidor %s: A Temperatura da %s está acima de 39°C, nas últimas %d verificações! Risco de Super Aquecimento!. Média de temperatura: %.2f°C", ipServidor, componente, dias, temperaturaServer);
@@ -772,17 +781,13 @@ public class DaoDados {
 
         }
 
-        json2.put("text", descricao2);
-
-        Slack.sendMessage(json2);
-
+        slack.enviarAlerta(descricao2);
     }
 
     public void alertaRam() throws SlackApiException, IOException, InterruptedException {
         Conexao conexao = new Conexao();
         JdbcTemplate con = conexao.getConexaoDoBanco();
         JdbcTemplate conServer = conexao.getConexaoDoBancoServer();
-        JSONObject json = new JSONObject();
 
         Double mediaUsoRamServer = conServer.queryForObject("SELECT ROUND(AVG(emUso), 2) AS media_ultimas_10_leituras\n" +
                 "FROM (\n" +
@@ -851,18 +856,14 @@ public class DaoDados {
             con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresa, fkDataCenter, ipServidor, fkRam, fkLeitura);
             conServer.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (GETDATE(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresaServer, fkDataCenterServer, ipServidor, fkRamServer, fkLeituraServer);
         }
-        json.put("text", descricao);
 
-        Slack.sendMessage(json);
-
+        slack.enviarAlerta(descricao);
     }
 
     public void alertaDisco() throws SlackApiException, IOException, InterruptedException {
         Conexao conexao = new Conexao();
         JdbcTemplate con = conexao.getConexaoDoBanco();
         JdbcTemplate conServer = conexao.getConexaoDoBancoServer();
-        JSONObject json = new JSONObject();
-
 
         Double mediaUsoDiskServer = conServer.queryForObject("SELECT ROUND(AVG(emUso), 2) AS media_ultimas_10_leituras\n" +
                 "FROM (\n" +
@@ -951,9 +952,8 @@ public class DaoDados {
             conServer.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (GETDATE(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresaServer, fkDataCenterServer, ipServidor, fkDiscoServer, fkLeituraServer);
 
         }
-        json.put("text", descricao);
 
-        Slack.sendMessage(json);
+        slack.enviarAlerta(descricao);
 
         if (mediaLeituraServer < 80) {
             descricao2 = String.format("Alerta de Risco. Servidor %s: A velocidade de leitura do %s está abaixo de 80Mbs, nas ultimas %d verificações. Leitura do disco baixa! média de leitura: %.2fMBs", ipServidor, componente, dias, mediaLeituraServer);
@@ -990,9 +990,8 @@ public class DaoDados {
             conServer.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (GETDATE(),?,?,?,?,?,?,?)", tipo, descricao2, fkEmpresaServer, fkDataCenterServer, ipServidor, fkDiscoServer, fkLeituraServer);
 
         }
-        json.put("text", descricao2);
 
-        Slack.sendMessage(json);
+        slack.enviarAlerta(descricao2);
 
         if (mediaEscritaServer < 30) {
             descricao3 = String.format("Alerta de Risco. Servidor %s: A velocidade de escrita do %s está abaixo de 30Mbs, nas ultimas %d verificações. escrita do disco baixa! média de leitura: %.2fMBs", ipServidor, componente, dias, mediaLeituraServer);
@@ -1029,19 +1028,13 @@ public class DaoDados {
             conServer.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (GETDATE(),?,?,?,?,?,?,?)", tipo, descricao3, fkEmpresaServer, fkDataCenterServer, ipServidor, fkDiscoServer, fkLeituraServer);
 
         }
-        json.put("text", descricao3);
-
-        Slack.sendMessage(json);
-
+        slack.enviarAlerta(descricao3);
     }
 
     public void alertaRede() throws SlackApiException, IOException, InterruptedException {
         Conexao conexao = new Conexao();
         JdbcTemplate con = conexao.getConexaoDoBanco();
         JdbcTemplate conServer = conexao.getConexaoDoBancoServer();
-        JSONObject json = new JSONObject();
-        JSONObject json2 = new JSONObject();
-
 
         Double mediaUsoRedeUpServer = conServer.queryForObject("SELECT ROUND(AVG(upload), 2) AS media_ultimas_10_leituras\n" +
                 "FROM (\n" +
@@ -1085,7 +1078,7 @@ public class DaoDados {
         Integer dias = 10;
 
 
-        if ( mediaUsoRedeUpServer < 20) {
+        if (mediaUsoRedeUpServer < 20) {
             descricao = String.format("Alerta de Risco. Servidor %s: O upload da %s está abaixo de 20Mbs, nas ultimas %d verificações. A rede está lenta! Média de utilização: %.2fMbs", ipServidor, componente, dias, mediaUsoRedeUpServer);
 
             tipo = "Em risco";
@@ -1155,13 +1148,8 @@ public class DaoDados {
             conServer.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (GETDATE(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresaServer, fkDataCenterServer, ipServidor, fkRedeServer, fkLeituraServer);
         }
 
-
-        json.put("text", descricao);
-        json2.put("text", descricao2);
-
-        Slack.sendMessage(json);
-        Slack.sendMessage(json2);
-
+//            slack.enviarAlerta(descricao);
+//            slack.enviarAlerta(descricao2);
     }
 
     public String getHostNameUser() {

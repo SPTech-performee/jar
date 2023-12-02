@@ -1,5 +1,6 @@
 import Dao.DaoDados;
 import Modelo.*;
+import Slack.SlackConfig;
 
 import java.util.Scanner;
 
