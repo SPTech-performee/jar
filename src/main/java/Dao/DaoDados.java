@@ -654,17 +654,6 @@ public class DaoDados {
         JSONObject json = new JSONObject();
         JSONObject json2 = new JSONObject();
 
-        //CPU
-        Double mediaUsoCpu = con.queryForObject("SELECT ROUND(AVG(emUso), 2) AS media_ultimas_10_leituras\n" +
-                "FROM (\n" +
-                "    SELECT emUso\n" +
-                "    FROM leitura AS l\n" +
-                "    JOIN componente AS c ON c.idComponente = l.fkComponente \n" +
-                "    WHERE c.tipo = 'CPU' AND l.fkServidor = ?\n" +
-                "    ORDER BY l.idLeitura DESC\n" +
-                "    LIMIT 10\n" +
-                ") AS ultimas_leituras;", Double.class, ipServidor);
-
         Double mediaUsoCpuServer = conServer.queryForObject("SELECT ROUND(AVG(emUso), 2) AS media_ultimas_10_leituras\n" +
                 "FROM (\n" +
                 "    SELECT TOP 10 emUso\n" +
@@ -672,16 +661,6 @@ public class DaoDados {
                 "    JOIN componente AS c ON c.idComponente = l.fkComponente \n" +
                 "    WHERE c.tipo = 'CPU' AND l.fkServidor = ?\n" +
                 "    ORDER BY l.idLeitura DESC\n" +
-                ") AS ultimas_leituras;", Double.class, ipServidor);
-
-        Double temperatura = con.queryForObject("SELECT ROUND(AVG(temperatura), 2) AS media_ultimas_10_leituras\n" +
-                "FROM (\n" +
-                "    SELECT temperatura\n" +
-                "    FROM leitura AS l\n" +
-                "    JOIN componente AS c ON c.idComponente = l.fkComponente \n" +
-                "    WHERE c.tipo = 'CPU' AND l.fkServidor = ?\n" +
-                "    ORDER BY l.idLeitura DESC\n" +
-                "    LIMIT 10\n" +
                 ") AS ultimas_leituras;", Double.class, ipServidor);
 
         Double temperaturaServer = conServer.queryForObject("SELECT ROUND(AVG(temperatura), 2) AS media_ultimas_10_leituras\n" +
@@ -694,7 +673,7 @@ public class DaoDados {
                 ") AS ultimas_leituras;", Double.class, ipServidor);
 
 
-        Integer fkCpu = con.queryForObject("select idComponente from componente where tipo = 'CPU' and fkServidor = ?", Integer.class, ipServidor);
+        Integer fkCpu = con.queryForObject("select idComponente from Componente where tipo = \"CPU\" and fkServidor = ?", Integer.class, ipServidor);
         Integer fkCpuServer = conServer.queryForObject("select idComponente from componente where tipo = 'CPU' and fkServidor = ?", Integer.class, ipServidor);
 
         String componente = "CPU";
@@ -704,9 +683,9 @@ public class DaoDados {
         Integer dias = 10;
 
         Integer fkLeitura = con.queryForObject("SELECT idLeitura \n" +
-                "FROM leitura as l\n" +
-                "\tJOIN componente as c ON c.idComponente = l.fkComponente \n" +
-                "\t\tWHERE c.tipo = 'CPU' and l.fkServidor = ?\n" +
+                "FROM Leitura as l\n" +
+                "\tJOIN Componente as c ON c.idComponente = l.fkComponente \n" +
+                "\t\tWHERE c.tipo = \"CPU\" and l.fkServidor = ?\n" +
                 "\t\t\tORDER BY l.idLeitura DESC\n" +
                 "\t\t\t\tLIMIT 1;", Integer.class, ipServidor);
 
@@ -717,7 +696,7 @@ public class DaoDados {
                 "ORDER BY l.idLeitura DESC;\n", Integer.class, ipServidor);
 
 
-        if (mediaUsoCpu >= 85 && mediaUsoCpuServer >= 85) {
+        if (mediaUsoCpuServer >= 85) {
             descricao = String.format("Alerta de Risco. Servidor %s: A utilização da %s esteve constantemente acima de 85%%, nas últimas %d verificações. Pode ocorrer Travamentos! Média de utilização: %.2f%%", ipServidor, componente, dias, mediaUsoCpuServer);
 
             tipo = "Em risco";
@@ -731,7 +710,7 @@ public class DaoDados {
             setLog(logAlerta);
 
 
-        } else if (mediaUsoCpu >= 66 && mediaUsoCpu <= 84 && mediaUsoCpuServer >= 66 && mediaUsoCpuServer <= 84) {
+        } else if (mediaUsoCpuServer >= 66 && mediaUsoCpuServer <= 84) {
             descricao = String.format("Alerta de Cuidado. Servidor %s: A utilização da %s esteve constantemente entre 66%% a 84%%, nas últimas %d verificações. Pode ocorrer lentidão! Média de utilização: %.2f%%", ipServidor, componente, dias, mediaUsoCpuServer);
 
             tipo = "Cuidado";
@@ -757,27 +736,27 @@ public class DaoDados {
 
         Slack.sendMessage(json);
 
-        if (temperatura > 39 && temperaturaServer > 39) {
+        if (temperaturaServer > 39) {
             descricao2 = String.format("Alerta de Risco. Servidor %s: A Temperatura da %s está acima de 39°C, nas últimas %d verificações! Risco de Super Aquecimento!. Média de temperatura: %.2f°C", ipServidor, componente, dias, temperaturaServer);
 
             tipo = "Em risco";
 
-            con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresa, fkDataCenter, ipServidor, fkCpu, fkLeitura);
+            con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)", tipo, descricao2, fkEmpresa, fkDataCenter, ipServidor, fkCpu, fkLeitura);
 
-            conServer.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (GETDATE(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresaServer, fkDataCenterServer, ipServidor, fkCpuServer, fkLeituraServer);
+            conServer.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (GETDATE(),?,?,?,?,?,?,?)", tipo, descricao2, fkEmpresaServer, fkDataCenterServer, ipServidor, fkCpuServer, fkLeituraServer);
 
             String logAlerta = """
                     : Usuário do IP %s, hostName: %s. Teve %s""".formatted(ipUser, hostNameUser, descricao2);
             setLog(logAlerta);
 
 
-        } else if (temperatura >= 35 && temperatura <= 39 && temperaturaServer >= 35 && temperaturaServer <= 39) {
+        } else if (temperaturaServer >= 35 && temperaturaServer <= 39) {
             descricao2 = String.format("Alerta de Cuidado. Servidor %s: A Temperatura da %s está entre 35°C a 39°C, nas últimas %d verificações. Pode ocorrer aquecimento! média de temperatura: %.2f°C", ipServidor, componente, dias, temperaturaServer);
 
             tipo = "Cuidado";
 
-            con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresa, fkDataCenter, ipServidor, fkCpu, fkLeitura);
-            conServer.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (GETDATE(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresaServer, fkDataCenterServer, ipServidor, fkCpuServer, fkLeituraServer);
+            con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)", tipo, descricao2, fkEmpresa, fkDataCenter, ipServidor, fkCpu, fkLeitura);
+            conServer.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (GETDATE(),?,?,?,?,?,?,?)", tipo, descricao2, fkEmpresaServer, fkDataCenterServer, ipServidor, fkCpuServer, fkLeituraServer);
 
             String logAlerta = """
                     : Usuário do IP %s, hostName: %s. Teve %s""".formatted(ipUser, hostNameUser, descricao2);
@@ -788,8 +767,8 @@ public class DaoDados {
 
             tipo = "Estável";
 
-            con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresa, fkDataCenter, ipServidor, fkCpu, fkLeitura);
-            conServer.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (GETDATE(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresaServer, fkDataCenterServer, ipServidor, fkCpuServer, fkLeituraServer);
+            con.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (now(),?,?,?,?,?,?,?)", tipo, descricao2, fkEmpresa, fkDataCenter, ipServidor, fkCpu, fkLeitura);
+            conServer.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (GETDATE(),?,?,?,?,?,?,?)", tipo, descricao2, fkEmpresaServer, fkDataCenterServer, ipServidor, fkCpuServer, fkLeituraServer);
 
         }
 
@@ -805,17 +784,6 @@ public class DaoDados {
         JdbcTemplate conServer = conexao.getConexaoDoBancoServer();
         JSONObject json = new JSONObject();
 
-        //RAM
-        Double mediaUsoRam = con.queryForObject("SELECT ROUND(AVG(emUso), 2) AS media_ultimas_10_leituras\n" +
-                "FROM (\n" +
-                "    SELECT emUso\n" +
-                "    FROM leitura AS l\n" +
-                "    JOIN componente AS c ON c.idComponente = l.fkComponente \n" +
-                "    WHERE c.tipo = 'Ram' AND l.fkServidor = ?\n" +
-                "    ORDER BY l.idLeitura DESC\n" +
-                "    LIMIT 10\n" +
-                ") AS ultimas_leituras;", Double.class, ipServidor);
-
         Double mediaUsoRamServer = conServer.queryForObject("SELECT ROUND(AVG(emUso), 2) AS media_ultimas_10_leituras\n" +
                 "FROM (\n" +
                 "    SELECT TOP 10 emUso\n" +
@@ -825,19 +793,16 @@ public class DaoDados {
                 "    ORDER BY l.idLeitura DESC\n" +
                 ") AS ultimas_leituras;", Double.class, ipServidor);
 
-        Double capacidadeTotalRam = con.queryForObject("SELECT c.capacidadeTotal as capacidade FROM Componente as c\n" +
-                "    WHERE fkServidor = ? AND c.tipo = 'RAM';", Double.class, ipServidor);
-
         Double capacidadeTotalRamServer = conServer.queryForObject("SELECT c.capacidadeTotal as capacidade FROM Componente as c\n" +
                 "    WHERE fkServidor = ? AND c.tipo = 'RAM';", Double.class, ipServidor);
 
-        Integer fkRam = con.queryForObject("select idComponente from componente where tipo = 'Ram' and fkServidor = ?", Integer.class, ipServidor);
+        Integer fkRam = con.queryForObject("select idComponente from Componente where tipo = \"Ram\" and fkServidor = ?", Integer.class, ipServidor);
         Integer fkRamServer = conServer.queryForObject("select idComponente from componente where tipo = 'Ram' and fkServidor = ?", Integer.class, ipServidor);
 
         Integer fkLeitura = con.queryForObject("SELECT idLeitura \n" +
-                "FROM leitura as l\n" +
-                "\tJOIN componente as c ON c.idComponente = l.fkComponente \n" +
-                "\t\tWHERE c.tipo = 'Ram' and l.fkServidor = ?\n" +
+                "FROM Leitura as l\n" +
+                "\tJOIN Componente as c ON c.idComponente = l.fkComponente \n" +
+                "\t\tWHERE c.tipo = \"Ram\" and l.fkServidor = ?\n" +
                 "\t\t\tORDER BY l.idLeitura DESC\n" +
                 "\t\t\t\tLIMIT 1;", Integer.class, ipServidor);
 
@@ -853,7 +818,7 @@ public class DaoDados {
         Integer dias = 10;
 
 
-        if (mediaUsoRam > (capacidadeTotalRam * .85) && mediaUsoRamServer > (capacidadeTotalRamServer * .85)) {
+        if (mediaUsoRamServer > (capacidadeTotalRamServer * .85)) {
             descricao = String.format("Alerta de Risco. Servidor %s: A utilização da %s está constantemente acima de 85%% da memória total, nas ultimas %d verificações. Risco de travamento! Média de utilização: %.2fGB", ipServidor, componente, dias, mediaUsoRamServer);
 
             tipo = "Em risco";
@@ -866,7 +831,7 @@ public class DaoDados {
             setLog(logAlerta);
 
 
-        } else if (mediaUsoRam <= (capacidadeTotalRam * .85) && mediaUsoRam >= (capacidadeTotalRam * .66) && mediaUsoRamServer <= (capacidadeTotalRamServer * .85) && mediaUsoRamServer >= (capacidadeTotalRamServer * .66)) {
+        } else if (mediaUsoRamServer <= (capacidadeTotalRamServer * .85) && mediaUsoRamServer >= (capacidadeTotalRamServer * .66)) {
             descricao = String.format("Alerta de Cuidado. Servidor %s: A utilização da %s está ocilando entre 66%% a 85%% da memória total, nas ultimas %d verificações. Pode ocorrer lentidão! Média de utilização: %.2fGB", ipServidor, componente, dias, mediaUsoRamServer);
 
             tipo = "Cuidado";
@@ -898,16 +863,6 @@ public class DaoDados {
         JdbcTemplate conServer = conexao.getConexaoDoBancoServer();
         JSONObject json = new JSONObject();
 
-        //Disco
-        Double mediaUsoDisk = con.queryForObject("SELECT ROUND(AVG(emUso), 2) AS media_ultimas_10_leituras\n" +
-                "FROM (\n" +
-                "    SELECT emUso\n" +
-                "    FROM leitura AS l\n" +
-                "    JOIN componente AS c ON c.idComponente = l.fkComponente \n" +
-                "    WHERE c.tipo = 'Disco' AND l.fkServidor = ?\n" +
-                "    ORDER BY l.idLeitura DESC\n" +
-                "    LIMIT 10\n" +
-                ") AS ultimas_leituras;", Double.class, ipServidor);
 
         Double mediaUsoDiskServer = conServer.queryForObject("SELECT ROUND(AVG(emUso), 2) AS media_ultimas_10_leituras\n" +
                 "FROM (\n" +
@@ -916,16 +871,6 @@ public class DaoDados {
                 "    JOIN componente AS c ON c.idComponente = l.fkComponente \n" +
                 "    WHERE c.tipo = 'Disco' AND l.fkServidor = ?\n" +
                 "    ORDER BY l.idLeitura DESC\n" +
-                ") AS ultimas_leituras;", Double.class, ipServidor);
-
-        Double mediaLeiura = con.queryForObject("SELECT ROUND(AVG(velocidadeLeitura), 2) AS media_ultimas_10_leituras\n" +
-                "FROM (\n" +
-                "    SELECT velocidadeLeitura\n" +
-                "    FROM leitura AS l\n" +
-                "    JOIN componente AS c ON c.idComponente = l.fkComponente \n" +
-                "    WHERE c.tipo = 'Disco' AND l.fkServidor = ?\n" +
-                "    ORDER BY l.idLeitura DESC\n" +
-                "    LIMIT 10\n" +
                 ") AS ultimas_leituras;", Double.class, ipServidor);
 
         Double mediaLeituraServer = conServer.queryForObject("SELECT ROUND(AVG(velocidadeLeitura), 2) AS media_ultimas_10_leituras\n" +
@@ -937,15 +882,6 @@ public class DaoDados {
                 "    ORDER BY l.idLeitura DESC\n" +
                 ") AS ultimas_leituras;", Double.class, ipServidor);
 
-        Double mediaEscrita = con.queryForObject("SELECT ROUND(AVG(velocidadeEscrita), 2) AS media_ultimas_10_leituras\n" +
-                "FROM (\n" +
-                "    SELECT velocidadeEscrita\n" +
-                "    FROM leitura AS l\n" +
-                "    JOIN componente AS c ON c.idComponente = l.fkComponente \n" +
-                "    WHERE c.tipo = 'Disco' AND l.fkServidor = ?\n" +
-                "    ORDER BY l.idLeitura DESC\n" +
-                "    LIMIT 10\n" +
-                ") AS ultimas_leituras;", Double.class, ipServidor);
 
         Double mediaEscritaServer = conServer.queryForObject("SELECT ROUND(AVG(velocidadeEscrita), 2) AS media_ultimas_10_leituras\n" +
                 "FROM (\n" +
@@ -957,13 +893,13 @@ public class DaoDados {
                 ") AS ultimas_leituras;", Double.class, ipServidor);
 
 
-        Integer fkDisco = con.queryForObject("select idComponente from componente where tipo = 'Disco' and fkServidor = ?", Integer.class, ipServidor);
+        Integer fkDisco = con.queryForObject("select idComponente from Componente where tipo = \"Disco\" and fkServidor = ?", Integer.class, ipServidor);
         Integer fkDiscoServer = conServer.queryForObject("select idComponente from componente where tipo = 'Disco' and fkServidor = ?", Integer.class, ipServidor);
 
         Integer fkLeitura = con.queryForObject("SELECT idLeitura \n" +
-                "FROM leitura as l\n" +
-                "\tJOIN componente as c ON c.idComponente = l.fkComponente \n" +
-                "\t\tWHERE c.tipo = 'Disco' and l.fkServidor = ?\n" +
+                "FROM Leitura as l\n" +
+                "\tJOIN Componente as c ON c.idComponente = l.fkComponente \n" +
+                "\t\tWHERE c.tipo = \"Disco\" and l.fkServidor = ?\n" +
                 "\t\t\tORDER BY l.idLeitura DESC\n" +
                 "\t\t\t\tLIMIT 1;", Integer.class, ipServidor);
         Integer fkLeituraServer = conServer.queryForObject("SELECT TOP 1 idLeitura\n" +
@@ -980,7 +916,7 @@ public class DaoDados {
         Integer dias = 10;
 
 
-        if (mediaUsoDisk > 85 && mediaUsoDiskServer > 85) {
+        if (mediaUsoDiskServer > 85) {
             descricao = String.format("Alerta de Risco. Servidor %s: A utilização do %s está acima de 85%% do armazenamento total, nas ultimas %d verificações. Pouco espaço no disco! média de utilização: %.2f%%", ipServidor, componente, dias, mediaUsoDiskServer);
 
             tipo = "Em risco";
@@ -993,7 +929,7 @@ public class DaoDados {
             setLog(logAlerta);
 
 
-        } else if (mediaUsoDisk >= 66 && mediaUsoDisk <= 85 && mediaUsoDiskServer >= 66 && mediaUsoDiskServer <= 85) {
+        } else if (mediaUsoDiskServer >= 66 && mediaUsoDiskServer <= 85) {
             descricao = String.format("Alerta de Cuidado. Servidor %s: A utilização do %s está entre de 66%% a 85%% do armazenamento total, nas ultimas %d verificações. Espaço razoável no disco! média de utilização: %.2f%%", ipServidor, componente, dias, mediaUsoDiskServer);
 
             tipo = "Cuidado";
@@ -1106,16 +1042,7 @@ public class DaoDados {
         JSONObject json = new JSONObject();
         JSONObject json2 = new JSONObject();
 
-        //rede
-        Double mediaUsoRedeUp = con.queryForObject("SELECT ROUND(AVG(upload), 2) AS media_ultimas_10_leituras\n" +
-                "FROM (\n" +
-                "    SELECT upload\n" +
-                "    FROM leitura AS l\n" +
-                "    JOIN componente AS c ON c.idComponente = l.fkComponente \n" +
-                "    WHERE c.tipo = 'Rede' AND l.fkServidor = ?\n" +
-                "    ORDER BY l.idLeitura DESC\n" +
-                "    LIMIT 10\n" +
-                ") AS ultimas_leituras;", Double.class, ipServidor);
+
         Double mediaUsoRedeUpServer = conServer.queryForObject("SELECT ROUND(AVG(upload), 2) AS media_ultimas_10_leituras\n" +
                 "FROM (\n" +
                 "    SELECT TOP 10 upload\n" +
@@ -1125,15 +1052,7 @@ public class DaoDados {
                 "    ORDER BY l.idLeitura DESC\n" +
                 ") AS ultimas_leituras;", Double.class, ipServidor);
 
-        Double mediaUsoRedeDow = con.queryForObject("SELECT ROUND(AVG(download), 2) AS media_ultimas_10_leituras\n" +
-                "FROM (\n" +
-                "    SELECT download\n" +
-                "    FROM leitura AS l\n" +
-                "    JOIN componente AS c ON c.idComponente = l.fkComponente \n" +
-                "    WHERE c.tipo = 'Rede' AND l.fkServidor = ?\n" +
-                "    ORDER BY l.idLeitura DESC\n" +
-                "    LIMIT 10\n" +
-                ") AS ultimas_leituras;", Double.class, ipServidor);
+
         Double mediaUsoRedeDowServer = conServer.queryForObject("SELECT ROUND(AVG(download), 2) AS media_ultimas_10_leituras\n" +
                 "FROM (\n" +
                 "    SELECT TOP 10 download\n" +
@@ -1144,13 +1063,13 @@ public class DaoDados {
                 ") AS ultimas_leituras;", Double.class, ipServidor);
 
 
-        Integer fkRede = con.queryForObject("select idComponente from componente where tipo = 'Rede' and fkServidor = ?", Integer.class, ipServidor);
+        Integer fkRede = con.queryForObject("select idComponente from Componente where tipo = \"Rede\" and fkServidor = ?", Integer.class, ipServidor);
         Integer fkRedeServer = conServer.queryForObject("select idComponente from componente where tipo = 'Rede' and fkServidor = ?", Integer.class, ipServidor);
 
         Integer fkLeitura = con.queryForObject("SELECT idLeitura \n" +
-                "FROM leitura as l\n" +
-                "\tJOIN componente as c ON c.idComponente = l.fkComponente \n" +
-                "\t\tWHERE c.tipo = 'Rede' and l.fkServidor = ?\n" +
+                "FROM Leitura as l\n" +
+                "\tJOIN Componente as c ON c.idComponente = l.fkComponente \n" +
+                "\t\tWHERE c.tipo = \"Rede\" and l.fkServidor = ?\n" +
                 "\t\t\tORDER BY l.idLeitura DESC\n" +
                 "\t\t\t\tLIMIT 1;", Integer.class, ipServidor);
         Integer fkLeituraServer = conServer.queryForObject("SELECT TOP 1 idLeitura\n" +
@@ -1166,7 +1085,7 @@ public class DaoDados {
         Integer dias = 10;
 
 
-        if (mediaUsoRedeUp < 20 && mediaUsoRedeUp < 20) {
+        if ( mediaUsoRedeUpServer < 20) {
             descricao = String.format("Alerta de Risco. Servidor %s: O upload da %s está abaixo de 20Mbs, nas ultimas %d verificações. A rede está lenta! Média de utilização: %.2fMbs", ipServidor, componente, dias, mediaUsoRedeUpServer);
 
             tipo = "Em risco";
@@ -1179,7 +1098,7 @@ public class DaoDados {
             setLog(logAlerta);
 
 
-        } else if (mediaUsoRedeUp <= 89 && mediaUsoRedeUp >= 20 && mediaUsoRedeUpServer <= 89 && mediaUsoRedeUpServer >= 20) {
+        } else if (mediaUsoRedeUpServer <= 89 && mediaUsoRedeUpServer >= 20) {
             descricao = String.format("Alerta de Cuidado. Servidor %s: O upload da %s está entre 20Mbs a 89Mbs, nas ultimas %d verificações. A rede Pode ficar Lenta! Média de utilização: %.2fMbs", ipServidor, componente, dias, mediaUsoRedeUpServer);
 
             tipo = "Cuidado";
@@ -1201,7 +1120,7 @@ public class DaoDados {
         }
 
 
-        if (mediaUsoRedeDow < 40 && mediaUsoRedeDowServer < 40) {
+        if (mediaUsoRedeDowServer < 40) {
             descricao2 = String.format("Alerta de Risco. Servidor %s: O download da %s está abaixo de 40Mbs, nas ultimas %d verificações. A rede está lenta! Média de utilização: %.2fMbs", ipServidor, componente, dias, mediaUsoRedeDowServer);
 
             tipo = "Em risco";
@@ -1214,7 +1133,7 @@ public class DaoDados {
             setLog(logAlerta);
 
 
-        } else if (mediaUsoRedeDow <= 89 && mediaUsoRedeDow >= 40 && mediaUsoRedeDowServer <= 89 && mediaUsoRedeDowServer >= 40) {
+        } else if (mediaUsoRedeDowServer <= 89 && mediaUsoRedeDowServer >= 40) {
             descricao2 = String.format("Alerta de Cuidado. Servidor %s: O download da %s está entre 40Mbs a 89Mbs, nas ultimas %d verificações. A rede Pode ficar Lenta! Média de utilização: %.2fMbs", ipServidor, componente, dias, mediaUsoRedeDowServer);
 
             tipo = "Cuidado";
