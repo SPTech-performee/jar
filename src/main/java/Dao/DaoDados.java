@@ -78,10 +78,28 @@ public class DaoDados {
     public DaoDados() {
     }
 
-    private static final String file_path = System.getProperty("java.io.tmpdir") + "/performee_log.txt";
+    private static final String file_name = "performee_log.txt";
+    // Pasta dos logs para Windows
+    private static final String log_folder_windows = System.getProperty("user.home") + "\\Documentos\\Log\\";
+
+    // Pasta dos Logs para Linux (Ubuntu)
+    private static final String log_folder_unix = System.getProperty("user.home") + "/Log/";
+
+    private static final String file_path = isWindows() ? log_folder_windows + file_name : log_folder_unix + file_name;
+
+    // Vendo se o sistema é Windowns
+    private static boolean isWindows() {
+        return System.getProperty("os.name").toLowerCase().contains("win");
+    }
 
     public void setLog(String descricao) {
         try {
+            System.out.println(file_path);
+            // Verifica se o diretório existe... se não existir, ele cria.
+            if (!Files.exists(Path.of(isWindows() ? log_folder_windows : log_folder_unix))) {
+                Files.createDirectories(Path.of(isWindows() ? log_folder_windows : log_folder_unix));
+            }
+
             // Verifica se o arquivo existe... se não existir, ele cria.
             if (!Files.exists(Path.of(file_path))) {
                 setCaminhoArq(file_path);
@@ -101,21 +119,10 @@ public class DaoDados {
 
     private static void setCaminhoArq(String caminho) {
         System.out.println(caminho);
-        boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
 
         try {
-            if (isWindows) {
-                // Se for Windows, cria o arquivo sem definir permissões
-                Files.createFile(Path.of(caminho));
-            } else {
-                // Se não for Windows, define permissões POSIX
-                Set<PosixFilePermission> perms = EnumSet.of(
-                        PosixFilePermission.OWNER_READ,
-                        PosixFilePermission.OWNER_EXECUTE,
-                        PosixFilePermission.OWNER_WRITE
-                );
-                Files.createFile(Path.of(caminho), PosixFilePermissions.asFileAttribute(perms));
-            }
+            // Cria o arquivo na pasta Log com permissões adequadas
+            Files.createFile(Path.of(caminho));
 
             System.out.println("Arquivo gerado com sucesso em: " + caminho);
         } catch (IOException e) {
@@ -468,9 +475,6 @@ public class DaoDados {
     }
 
     public void inserirLeitura() {
-        slack.enviarAlerta("Gosto de penis");
-
-
         Timer cronometro = new Timer();
         Timer cronometro2 = new Timer();
         Timer cronometro3 = new Timer();
