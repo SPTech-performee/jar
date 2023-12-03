@@ -6,12 +6,12 @@ import com.slack.api.methods.SlackApiException;
 import java.io.IOException;
 
 public class SlackConfig {
-    private static MethodsClient client;
-    private final String token;
-    private final String canal;
+    private MethodsClient client;
+    private String token;
+    private String canal;
 
     public SlackConfig(String token, String canal) {
-        client = Slack.getInstance().methods();
+        this.client = Slack.getInstance().methods();
         this.token = token;
         this.canal = canal;
     }

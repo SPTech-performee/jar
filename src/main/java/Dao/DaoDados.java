@@ -44,8 +44,7 @@ public class DaoDados {
     private String hostNameUser = looca.getRede().getParametros().getNomeDeDominio();
     private String ipUser = looca.getRede().getParametros().getServidoresDns().toString();
 
-//  -> Inserir o token e o canal do slack, respectivamente <-
-    SlackConfig slack = new SlackConfig("", "");
+    SlackConfig slack = new SlackConfig("xoxb-6181502641763-6281797380997-o6VZ6MYnYMTimYdSuL6he6Su", "C065CMQ4ADQ");
 
     private String ipServidor;
     private Integer fkEmpresa;
@@ -282,7 +281,7 @@ public class DaoDados {
                         modelo = rede.getNomeExibicao();             //bytes em mb
                         capacidadeTotal = (rede.getBytesEnviados() / 1048576.0) + (rede.getBytesRecebidos() / 1048576.0);
 
-                        conServer.update("insert into Componente(tipo, modelo, capacidadeTotal, fkMedida, fkEmpresa, fkDataCenter, fkServidor) values (?,?,ROUND(?, 2),?,?,?,?)", "Rede", modelo, capacidadeTotal, 4, fkDataCenterServer, fkDataCenterServer, ipServidor);
+                        conServer.update("insert into Componente(tipo, modelo, capacidadeTotal, fkMedida, fkEmpresa, fkDataCenter, fkServidor) values (?,?,ROUND(?, 2),?,?,?,?)", "Rede", modelo, capacidadeTotal, 4, fkEmpresaServer, fkDataCenterServer, ipServidor);
                         break;
                     }
                 }
@@ -469,6 +468,9 @@ public class DaoDados {
     }
 
     public void inserirLeitura() {
+        slack.enviarAlerta("Gosto de penis");
+
+
         Timer cronometro = new Timer();
         Timer cronometro2 = new Timer();
         Timer cronometro3 = new Timer();
@@ -599,7 +601,7 @@ public class DaoDados {
                         throw new RuntimeException(e);
                     }
                 }
-            }, 5000, 60000);
+            }, 60000, 60000);
 
             cronometro2.schedule(new TimerTask() {
                 @Override
@@ -615,7 +617,7 @@ public class DaoDados {
                         throw new RuntimeException(e);
                     }
                 }
-            }, 5000, 120000);
+            }, 120000, 120000);
       };
 
     public List<Componentes> exibirComponentes() {
@@ -1148,8 +1150,8 @@ public class DaoDados {
             conServer.update("insert into Alerta(dataAlerta, tipo, descricao, fkEmpresa, fkDataCenter, fkServidor, fkComponente, fkLeitura) values (GETDATE(),?,?,?,?,?,?,?)", tipo, descricao, fkEmpresaServer, fkDataCenterServer, ipServidor, fkRedeServer, fkLeituraServer);
         }
 
-//            slack.enviarAlerta(descricao);
-//            slack.enviarAlerta(descricao2);
+            slack.enviarAlerta(descricao);
+            slack.enviarAlerta(descricao2);
     }
 
     public String getHostNameUser() {

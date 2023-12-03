@@ -47,12 +47,6 @@
             <version>12.4.1.jre11</version>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>com.slack.api</groupId>-->
-<!--            <artifactId>slack-api-client</artifactId>-->
-<!--            <version>1.35.0</version>-->
-<!--        </dependency>-->
-
         <dependency>
             <groupId>com.slack.api</groupId>
             <artifactId>bolt</artifactId>

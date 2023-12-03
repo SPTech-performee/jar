@@ -1,10 +1,14 @@
+Dao\DaoDados.class
+Slack\SlackConfig.class
+Dao\DaoDados$3.class
+Dao\DaoDados$2.class
 Modelo\Leituras.class
 Modelo\Ram.class
-Dao\DaoDados.class
+Dao\DaoDados$1.class
 Modelo\Rede.class
+Slack\SlackStructure.class
 Conexao\Conexao.class
 Modelo\Disk.class
 AppPerformee.class
 Modelo\Componentes.class
-Dao\Slack.class
 Modelo\Cpu.class

@@ -29,5 +29,5 @@ Visualize o executável Python Performee no seguite link:
 
 #
 
-- 📌 Em andamento.
+- 📌 Finalizado.
 - 🖥️ Desenvolvido na IDE IntelliJ IDEA Community Edition 2023.1.3

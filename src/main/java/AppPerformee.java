@@ -115,8 +115,6 @@ public class AppPerformee {
                             for (Rede rede : dao.exibirRede()) {
                                 System.out.println(rede);
                             }
-
-
                             break;
                         }
                         case 6: {
