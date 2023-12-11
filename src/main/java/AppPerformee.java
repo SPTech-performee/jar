@@ -54,7 +54,8 @@ public class AppPerformee {
                             | \033[1;35m3)\033[m Inserir dados de leitura   |
                             | \033[1;35m4)\033[m Ver Componentes            |
                             | \033[1;35m5)\033[m Ver Leituras               |
-                            | \033[1;35m6)\033[m Sair                       |
+                            | \033[1;35m6)\033[m Suporte                    |
+                            | \033[1;35m7)\033[m Sair                       |
                             +-------------------------------+""");
 
                     opcao = leitor.nextInt();
@@ -118,6 +119,19 @@ public class AppPerformee {
                             break;
                         }
                         case 6: {
+                            System.out.println("""
+                            +----------------------------+
+                            |       Suporte Guinix       |
+                            +----------------------------+
+                            +----------------------------+
+                            |Fale conosco: guinix.com.br |
+                            |Email: guinix@hotmail.com   |
+                            |Telefone: 4997-5182         |
+                            +----------------------------+
+                            """);
+                            break;
+                        }
+                        case 7: {
                             System.out.println("""
                                     Saindo...""");
                             String descricao = """
